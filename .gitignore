@@ -1,3 +1,4 @@
+/.idea/
 /vendor/
 /dist/
 
@@ -8,7 +9,3 @@ BUILD.php
 TEST.php
 PHPSTAN.php
 phpstan.neon
-/.idea/ChatBridge.iml
-/.idea/discord.xml
-/.idea/modules.xml
-/.idea/php.xml
