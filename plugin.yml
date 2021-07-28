@@ -1,0 +1,12 @@
+name: ChatBridge
+version: 1.0.0
+author: JaxkDev
+main: JaxkDev\ChatBridge\Main
+description: Plugin to bridge the chat between minecraft and discord using the DiscordBot API
+website: https://github.com/DiscordBot-PMMP/ChatBridge
+
+api: 3.7.0
+extensions:
+  core: ">=7.4" #aka PHP Version.
+depend:
+  - DiscordBot
