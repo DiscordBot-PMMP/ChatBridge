@@ -1,0 +1,47 @@
+---
+version: 1
+
+messages:
+  from_discord:
+    channels:
+      - "123456789"
+    format:
+      - "§a{NICKNAME}§r: §c{MESSAGE}"
+    to_minecraft_worlds: "*"
+
+  from_minecraft:
+    worlds: "*"
+    format:
+      text: "New Message"
+      embed:
+        enabled: true
+        title: "{USERNAME}"
+        description: "{MESSAGE}"
+        author: "ChatBridge"
+        colour: "EE5959"
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "123456789"
+
+
+commands:
+  from_minecraft:
+    worlds: "*"
+    format:
+      text: "Command executed"
+      embed:
+        enabled: true
+        title: "{USERNAME}"
+        description: "/{COMMAND} {ARGS}"
+        author: "ChatBridge"
+        colour: "49F9C1"
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "123456789"
+...
