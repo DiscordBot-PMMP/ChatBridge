@@ -13,13 +13,12 @@
 namespace JaxkDev\ChatBridge;
 
 use JaxkDev\DiscordBot\Plugin\Main as DiscordBot;
-use pocketmine\event\Listener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\utils\VersionString;
 use Phar;
 
-class Main extends PluginBase implements Listener{
+class Main extends PluginBase{
 
     private DiscordBot $discord;
 
@@ -35,11 +34,19 @@ class Main extends PluginBase implements Listener{
     }
 
     public function onEnable(){
-       // Register listener etc.
+        // Register listeners etc.
     }
 
     private function checkOldEventsFile(): void{
         if(is_file($this->discord->getDataFolder()."events.yml")){
+            if(is_file($this->getDataFolder()."config.yml")){
+                $this->getLogger()->warning("Cannot merge old events.yml file from DiscordBot as config.yml is present, Old events.yml moved from 'DiscordBot/events.yml' to 'ChatBridge/old_events.yml'.");
+                if(!rename($this->discord->getDataFolder()."events.yml", $this->getDataFolder()."old_events.yml")){
+                    $this->getLogger()->error("Failed to move '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+                }
+                return;
+            }
+            //Create new config.yml with old events.yml data.
             //var_dump(yaml_parse_file($this->discord->getDataFolder()."events.yml"));
             //Use file data to populate config (only if config is not already present)
             //unlink($this->discord->getDataFolder()."events.yml");

@@ -2,14 +2,16 @@
 version: 1
 
 messages:
-  from_discord:
+  discord:
+    enabled: true
     channels:
       - "123456789"
     format:
       - "§a{NICKNAME}§r: §c{MESSAGE}"
     to_minecraft_worlds: "*"
 
-  from_minecraft:
+  minecraft:
+    enabled: true
     worlds: "*"
     format:
       text: "New Message"
@@ -28,7 +30,8 @@ messages:
 
 
 commands:
-  from_minecraft:
+  minecraft:
+    enabled: true
     worlds: "*"
     format:
       text: "Command executed"
@@ -44,4 +47,79 @@ commands:
             inline: false
     to_discord_channels:
       - "123456789"
+
+
+leave:
+  discord:
+    enabled: true
+    servers:
+      - "123456789"
+    format:
+      - "§a{NICKNAME} §cHas left the discord server :("
+    to_minecraft_worlds: "*"
+
+  minecraft:
+    enabled: true
+    worlds: "*"
+    format:
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Left"
+        description: "- **{USERNAME}**"
+        author: "ChatBridge"
+        colour: "EE5959"
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "123456789"
+
+
+join:
+  discord:
+    enabled: true
+    servers:
+      - "123456789"
+    format:
+      - "§a{USERNAME} §cHas joined the discord server :)"
+    to_minecraft_worlds: "*"
+
+  minecraft:
+    enabled: true
+    format:
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Joined"
+        description: "+ **{USERNAME}**"
+        author: "ChatBridge"
+        colour: "EE5959"
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "123456789"
+
+
+transferred:
+  minecraft:
+    enabled: true
+    format:
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Transferred"
+        description: "**{USERNAME}** -> `{ADDRESS}:{PORT}`"
+        author: "ChatBridge"
+        colour: "EE5959"
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "123456789"
+
 ...
