@@ -15,6 +15,7 @@ namespace JaxkDev\ChatBridge;
 use JaxkDev\DiscordBot\Plugin\Main as DiscordBot;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
+use pocketmine\utils\Config;
 use pocketmine\utils\VersionString;
 use Phar;
 
@@ -37,22 +38,6 @@ class Main extends PluginBase{
 
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this->listener, $this);
-    }
-
-    private function checkOldEventsFile(): void{
-        if(is_file($this->discord->getDataFolder()."events.yml")){
-            if(is_file($this->getDataFolder()."config.yml")){
-                $this->getLogger()->warning("Cannot merge old events.yml file from DiscordBot as config.yml is present, Old events.yml moved from 'DiscordBot/events.yml' to 'ChatBridge/old_events.yml'.");
-                if(!rename($this->discord->getDataFolder()."events.yml", $this->getDataFolder()."old_events.yml")){
-                    $this->getLogger()->error("Failed to move '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
-                }
-                return;
-            }
-            //Create new config.yml with old events.yml data.
-            //var_dump(yaml_parse_file($this->discord->getDataFolder()."events.yml"));
-            //Use file data to populate config (only if config is not already present)
-            //unlink($this->discord->getDataFolder()."events.yml");
-        }
     }
 
     private function saveAllResources(): void{
@@ -88,5 +73,63 @@ class Main extends PluginBase{
             throw new PluginException("Incompatible dependency 'DiscordBot' detected.");
         }
         $this->discord = $discordBot;
+    }
+
+    //Remove in v2.0
+    private function checkOldEventsFile(): void{
+        $convertOldID = function(array $ids): array{
+            $new = [];
+            foreach($ids as $id){
+                $new[] = str_contains($id, ".") ? explode(".", $id)[1] : $id;
+            }
+            return $new;
+        };
+        if(is_file($this->discord->getDataFolder()."events.yml")){
+            if(is_file($this->getDataFolder()."config.yml")){
+                $this->getLogger()->warning("Cannot merge old events.yml file from DiscordBot as config.yml is present, Old events.yml moved from 'DiscordBot/events.yml' to 'ChatBridge/old_events.yml'.");
+                if(!rename($this->discord->getDataFolder()."events.yml", $this->getDataFolder()."old_events.yml")){
+                    $this->getLogger()->error("Failed to move '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+                }else{
+                    $this->getLogger()->debug("Moved '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+                }
+                return;
+            }
+            $this->saveResource("config.yml");
+            $old = new Config($this->discord->getDataFolder()."events.yml");
+            if(((int)$old->get("version", 0)) !== 1){
+                $this->getLogger()->error("Failed to convert DiscordBot's old events.yml to ChatBridge config.yml");
+                if(!rename($this->discord->getDataFolder()."events.yml", $this->getDataFolder()."old_events.yml")){
+                    $this->getLogger()->error("Failed to move '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+                }else{
+                    $this->getLogger()->debug("Moved '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+                }
+                return;
+            }
+            $cfg = $this->getConfig();
+            $cfg->setNested("messages.discord.from_channels", $convertOldID($old->getNested("message.fromDiscord.channels", ["123456789"])));
+            $cfg->setNested("messages.discord.format", $old->getNested("message.fromDiscord.format", "[Discord] §a{NICKNAME}§r > §c{MESSAGE}"));
+            $cfg->setNested("messages.minecraft.format.text", $old->getNested("message.toDiscord.format", "New Message"));
+            $cfg->setNested("messages.minecraft.to_discord_channels", $convertOldID($old->getNested("message.toDiscord.channels", ["123456789"])));
+
+            //Replace {COMMAND} to have same behaviour as DiscordBot v1
+            $cfg->setNested("commands.minecraft.format.text", str_replace("{COMMAND}", "/{COMMAND} {ARGS}", $old->getNested("command.toDiscord.format", "Command executed")));
+            $cfg->setNested("commands.minecraft.to_discord_channels", $convertOldID($old->getNested("command.toDiscord.channels", ["123456789"])));
+
+            $cfg->setNested("leave.discord.format", $old->getNested("member_leave.fromDiscord.format", "§a{NICKNAME} §cHas left the discord server :("));
+            $cfg->setNested("leave.minecraft.format.text", $old->getNested("member_leave.toDiscord.format", "Player Left"));
+            $cfg->setNested("leave.minecraft.to_discord_channels", $convertOldID($old->getNested("member_leave.toDiscord.channels", ["123456789"])));
+
+            $cfg->setNested("join.discord.format", $old->getNested("member_join.fromDiscord.format", "§a{USERNAME} §cHas joined the discord server :)"));
+            $cfg->setNested("join.minecraft.format.text", $old->getNested("member_join.toDiscord.format", "Player Joined"));
+            $cfg->setNested("join.minecraft.to_discord_channels", $convertOldID($old->getNested("member_join.toDiscord.channels", ["123456789"])));
+
+            $cfg->save();
+            $this->getLogger()->notice("Old DiscordBot events.yml has been migrated to ChatBridge's config.yml, review the new configuration at '{$this->getDataFolder()}config.yml' ");
+            if(!rename($this->discord->getDataFolder()."events.yml", $this->getDataFolder()."old_events.yml")){
+                $this->getLogger()->error("Failed to move '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+            }else{
+                $this->getLogger()->debug("Moved '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
+            }
+        }
     }
 }

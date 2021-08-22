@@ -4,14 +4,14 @@ version: 1
 messages:
   discord:
     enabled: true
-    channels:
+    from_channels:
       - "123456789"
     format: "[Discord] §a{NICKNAME}§r > §c{MESSAGE}"
     to_minecraft_worlds: "*"
 
   minecraft:
     enabled: true
-    worlds: "*"
+    from_worlds: "*"
     format:
       text: "New Message"
       embed:
@@ -31,7 +31,7 @@ messages:
 commands:
   minecraft:
     enabled: true
-    worlds: "*"
+    from_worlds: "*"
     format:
       text: "Command executed"
       embed:
@@ -51,14 +51,14 @@ commands:
 leave:
   discord:
     enabled: true
-    servers:
+    from_servers:
       - "123456789"
     format: "§a{NICKNAME} §cHas left the discord server :("
     to_minecraft_worlds: "*"
 
   minecraft:
     enabled: true
-    worlds: "*"
+    from_worlds: "*"
     format:
       text: ""
       embed:

@@ -104,7 +104,7 @@ class EventListener implements Listener{
             $this->plugin->getLogger()->debug("Ignoring message '{$event->getMessage()->getId()}', No text content.");
             return;
         }
-        if(!in_array($channel->getId()??"Will never be null", $config['channels'])){
+        if(!in_array($channel->getId()??"Will never be null", $config['from_channels'])){
             $this->plugin->getLogger()->debug("Ignoring message from channel '{$channel->getId()}', ID is not in list.");
             return;
         }
