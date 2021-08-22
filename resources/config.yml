@@ -6,8 +6,7 @@ messages:
     enabled: true
     channels:
       - "123456789"
-    format:
-      - "§a{NICKNAME}§r: §c{MESSAGE}"
+    format: "[Discord] §a{NICKNAME}§r > §c{MESSAGE}"
     to_minecraft_worlds: "*"
 
   minecraft:
@@ -54,8 +53,7 @@ leave:
     enabled: true
     servers:
       - "123456789"
-    format:
-      - "§a{NICKNAME} §cHas left the discord server :("
+    format: "§a{NICKNAME} §cHas left the discord server :("
     to_minecraft_worlds: "*"
 
   minecraft:
@@ -82,8 +80,7 @@ join:
     enabled: true
     servers:
       - "123456789"
-    format:
-      - "§a{USERNAME} §cHas joined the discord server :)"
+    format: "§a{USERNAME} §cHas joined the discord server :)"
     to_minecraft_worlds: "*"
 
   minecraft:

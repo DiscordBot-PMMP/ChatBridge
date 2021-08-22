@@ -21,6 +21,7 @@ use Phar;
 class Main extends PluginBase{
 
     private DiscordBot $discord;
+    private EventListener $listener;
 
     public function onLoad(){
         $this->checkPrerequisites();
@@ -29,12 +30,13 @@ class Main extends PluginBase{
         if(!$this->getConfig()->check()){
             throw new PluginException("Invalid config file, delete config.yml and restart server to restore default config.");
         }
-        // $this->updateConfig();
-        // $this->verifyConfig(); //Channel ID verification will take place after DiscordReady event.
+        // $this->updateConfig(); For v1.1 or v2.0 whichever changes config first.
+        // $this->verifyConfig(); //Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
+        $this->listener = new EventListener($this);
     }
 
     public function onEnable(){
-        // Register listeners etc.
+        $this->getServer()->getPluginManager()->registerEvents($this->listener, $this);
     }
 
     private function checkOldEventsFile(): void{
