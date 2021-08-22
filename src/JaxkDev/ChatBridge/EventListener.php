@@ -68,7 +68,13 @@ class EventListener implements Listener{
         $config = $this->config->getNested("messages.discord");
         if(!$config['enabled']) return;
 
-        $server = Storage::getServer($event->getMessage()->getServerId()??"Will never be null");
+        $server_id = $event->getMessage()->getServerId();
+        if($server_id === null){
+            //DM Channel.
+            $this->plugin->getLogger()->debug("Ignoring message '{$event->getMessage()->getId()}', Sent via DM to bot.");
+            return;
+        }
+        $server = Storage::getServer($server_id);
         if($server === null){
             //shouldn't happen, but can.
             $this->plugin->getLogger()->warning("Failed to process discord message, server '{$event->getMessage()->getServerId()}' does not exist in local storage.");
