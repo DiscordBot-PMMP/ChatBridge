@@ -116,6 +116,8 @@ class EventListener implements Listener{
         $message = str_replace(['{MESSAGE}', '{message'], $content, $message);
         $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
         $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName(), $message);
+        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s',(int)$event->getMessage()->getTimestamp()??time()), $message);
+        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)$event->getMessage()->getTimestamp()??time()), $message);
         if(!is_string($message)){
             throw new PluginException("A string is always expected, got '".gettype($message)."'");
         }
