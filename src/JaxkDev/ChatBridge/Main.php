@@ -132,4 +132,8 @@ class Main extends PluginBase{
             }
         }
     }
+
+    public function getDiscord(): DiscordBot{
+        return $this->discord;
+    }
 }

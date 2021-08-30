@@ -12,6 +12,12 @@
 
 namespace JaxkDev\ChatBridge;
 
+use JaxkDev\DiscordBot\Models\Messages\Embed\Author;
+use JaxkDev\DiscordBot\Models\Messages\Embed\Embed;
+use JaxkDev\DiscordBot\Models\Messages\Embed\Field;
+use JaxkDev\DiscordBot\Models\Messages\Embed\Footer;
+use JaxkDev\DiscordBot\Models\Messages\Message;
+use JaxkDev\DiscordBot\Plugin\ApiRejection;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordClosed;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordReady;
 use JaxkDev\DiscordBot\Plugin\Events\MessageSent;
@@ -57,8 +63,35 @@ class EventListener implements Listener{
         if(!$config['enabled']) return;
 
         $player = $event->getPlayer();
-        $world = $player->getLevelNonNull()->getName();
 
+        $from_worlds = is_array($config["from_worlds"]) ? $config["from_worlds"] : [$config["from_worlds"]];
+        if(!in_array("*", $from_worlds)){
+            //Only specific worlds.
+            $world = $player->getLevelNonNull()->getName();
+            if(!in_array($world, $from_worlds)){
+                $this->plugin->getLogger()->debug("Ignoring chat event, world '$world' is not listed.");
+                return;
+            }
+        }
+
+        $embed = null;
+        $embed_config = $config["format"]["embed"];
+        if($embed_config["enabled"]){
+            $fields = [];
+            foreach($embed_config["fields"] as $field){
+                $fields[] = new Field($field["name"], $field["value"], $field["inline"]);
+            }
+            $embed = new Embed($embed_config["title"], Embed::TYPE_RICH, $embed_config["description"],
+                $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
+                new Footer($embed_config["footer"]), null, null, null, new Author($embed_config["author"]), $fields);
+        }
+
+        foreach($config["to_discord_channels"] as $cid){
+            $message = new Message($cid, null, $config["format"]["text"]??"", $embed);
+            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+                $this->plugin->getLogger()->warning("Failed to send discord message on minecraft message event, '{$rejection->getMessage()}'");
+            });
+        }
     }
 
     /**
@@ -112,7 +145,7 @@ class EventListener implements Listener{
         //Format message.
         $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
         $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
-        $message = str_replace(['{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
         $message = str_replace(['{MESSAGE}', '{message'], $content, $message);
         $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
         $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName(), $message);

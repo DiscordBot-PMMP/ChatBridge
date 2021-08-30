@@ -16,14 +16,14 @@ messages:
       text: "New Message"
       embed:
         enabled: true
-        title: "{USERNAME}"
-        description: "{MESSAGE}"
-        author: "ChatBridge"
-        colour: "EE5959"
-        fields:
-          - name: "Field Name"
-            value: "Field Value"
-            inline: false
+        title: null
+        description: "{USERNAME} ```{MESSAGE}```"
+        url: null
+        author: null
+        footer: "ChatBridge"
+        colour: 0xEE5959
+        time: true
+        fields: []
     to_discord_channels:
       - "123456789"
 
@@ -39,7 +39,10 @@ commands:
         title: "{USERNAME}"
         description: "/{COMMAND} {ARGS}"
         author: "ChatBridge"
-        colour: "49F9C1"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0x49F9C1
         fields:
           - name: "Field Name"
             value: "Field Value"
@@ -66,7 +69,10 @@ leave:
         title: "Player Left"
         description: "- **{USERNAME}**"
         author: "ChatBridge"
-        colour: "EE5959"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
         fields:
           - name: "Field Name"
             value: "Field Value"
@@ -92,7 +98,10 @@ join:
         title: "Player Joined"
         description: "+ **{USERNAME}**"
         author: "ChatBridge"
-        colour: "EE5959"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
         fields:
           - name: "Field Name"
             value: "Field Value"
@@ -111,7 +120,10 @@ transferred:
         title: "Player Transferred"
         description: "**{USERNAME}** -> `{ADDRESS}:{PORT}`"
         author: "ChatBridge"
-        colour: "EE5959"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
         fields:
           - name: "Field Name"
             value: "Field Value"
