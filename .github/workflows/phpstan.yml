@@ -62,4 +62,4 @@ jobs:
         run: php composer.phar install --no-interaction
 
       - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyze --no-progress --memory-limit=2G --error-format=github
+        run: php ./vendor/phpstan/phpstan/phpstan.phar analyze --no-progress --memory-limit=2G --error-format=github
