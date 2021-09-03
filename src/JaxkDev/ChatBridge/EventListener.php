@@ -17,6 +17,7 @@ use JaxkDev\DiscordBot\Models\Messages\Embed\Embed;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Field;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Footer;
 use JaxkDev\DiscordBot\Models\Messages\Message;
+use JaxkDev\DiscordBot\Models\Messages\Webhook;
 use JaxkDev\DiscordBot\Plugin\ApiRejection;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordClosed;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordReady;
@@ -100,29 +101,33 @@ class EventListener implements Listener{
     public function onDiscordMessage(MessageSent $event): void{
         $config = $this->config->getNested("messages.discord");
         if(!$config['enabled']) return;
+        if(($msg = $event->getMessage()) instanceof Webhook){
+            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via webhook.");
+            return;
+        }
 
-        $server_id = $event->getMessage()->getServerId();
+        $server_id = $msg->getServerId();
         if($server_id === null){
             //DM Channel.
-            $this->plugin->getLogger()->debug("Ignoring message '{$event->getMessage()->getId()}', Sent via DM to bot.");
+            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via DM to bot.");
             return;
         }
         $server = Storage::getServer($server_id);
         if($server === null){
             //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message, server '{$event->getMessage()->getServerId()}' does not exist in local storage.");
+            $this->plugin->getLogger()->warning("Failed to process discord message, server '{$msg->getServerId()}' does not exist in local storage.");
             return;
         }
-        $channel = Storage::getChannel($event->getMessage()->getChannelId());
+        $channel = Storage::getChannel($msg->getChannelId());
         if($channel === null){
             //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message, channel '{$event->getMessage()->getChannelId()}' does not exist in local storage.");
+            $this->plugin->getLogger()->warning("Failed to process discord message, channel '{$msg->getChannelId()}' does not exist in local storage.");
             return;
         }
-        $member = Storage::getMember($event->getMessage()->getAuthorId()??"Will never be null");
+        $member = Storage::getMember($msg->getAuthorId()??"Will never be null");
         if($member === null){
             //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message, author member '{$event->getMessage()->getAuthorId()}' does not exist in local storage.");
+            $this->plugin->getLogger()->warning("Failed to process discord message, author member '{$msg->getAuthorId()}' does not exist in local storage.");
             return;
         }
         $user = Storage::getUser($member->getUserId());
@@ -131,10 +136,10 @@ class EventListener implements Listener{
             $this->plugin->getLogger()->warning("Failed to process discord message, author user '{$member->getUserId()}' does not exist in local storage.");
             return;
         }
-        $content = trim($event->getMessage()->getContent());
+        $content = trim($msg->getContent());
         if(strlen($content) === 0){
             //Files or other type of messages.
-            $this->plugin->getLogger()->debug("Ignoring message '{$event->getMessage()->getId()}', No text content.");
+            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', No text content.");
             return;
         }
         if(!in_array($channel->getId()??"Will never be null", $config['from_channels'])){
@@ -149,8 +154,8 @@ class EventListener implements Listener{
         $message = str_replace(['{MESSAGE}', '{message'], $content, $message);
         $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
         $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s',(int)$event->getMessage()->getTimestamp()??time()), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)$event->getMessage()->getTimestamp()??time()), $message);
+        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s',(int)$msg->getTimestamp()??time()), $message);
+        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)$msg->getTimestamp()??time()), $message);
         if(!is_string($message)){
             throw new PluginException("A string is always expected, got '".gettype($message)."'");
         }
