@@ -61,5 +61,9 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: php composer.phar install --no-interaction
 
+      - name: Update Composer dependencies
+        if: steps.composer-cache.outputs.cache-hit == 'true'
+        run: php composer.phar update --no-interaction
+
       - name: Run PHPStan
         run: php ./vendor/phpstan/phpstan/phpstan.phar analyze --no-progress --memory-limit=2G --error-format=github
