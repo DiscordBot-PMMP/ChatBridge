@@ -30,9 +30,14 @@ use pocketmine\utils\Config;
 
 class EventListener implements Listener{
 
-    private bool $ready = false;
-    private Main $plugin;
-    private Config $config;
+    /** @var bool */
+    private $ready = false;
+
+    /** @var Main */
+    private $plugin;
+
+    /** @var Config */
+    private $config;
 
     public function __construct(Main $plugin){
         $this->plugin = $plugin;

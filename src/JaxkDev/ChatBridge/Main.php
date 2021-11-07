@@ -21,8 +21,11 @@ use Phar;
 
 class Main extends PluginBase{
 
-    private DiscordBot $discord;
-    private EventListener $listener;
+    /** @var DiscordBot */
+    private $discord;
+
+    /** @var EventListener */
+    private $listener;
 
     public function onLoad(){
         $this->checkPrerequisites();
