@@ -4,8 +4,8 @@
         "php": "^7.4|^8.0"
     },
     "require-dev": {
-        "jaxkdev/discordbot": "^2.0.0",
-        "phpstan/phpstan": "^0.12.96",
+        "jaxkdev/discordbot": "^2",
+        "phpstan/phpstan": "^1",
         "pocketmine/pocketmine-mp": "^3"
     }
 }

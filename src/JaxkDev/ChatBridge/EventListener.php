@@ -12,6 +12,7 @@
 
 namespace JaxkDev\ChatBridge;
 
+use AssertionError;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Author;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Embed;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Field;
@@ -25,7 +26,6 @@ use JaxkDev\DiscordBot\Plugin\Events\MessageSent;
 use JaxkDev\DiscordBot\Plugin\Storage;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\plugin\PluginException;
 use pocketmine\utils\Config;
 
 class EventListener implements Listener{
@@ -60,6 +60,7 @@ class EventListener implements Listener{
             return;
         }
 
+        /** @var array $config */
         $config = $this->config->getNested("messages.minecraft");
         if(!$config['enabled']) return;
 
@@ -99,6 +100,7 @@ class EventListener implements Listener{
      * @priority MONITOR
      */
     public function onDiscordMessage(MessageSent $event): void{
+        /** @var array $config */
         $config = $this->config->getNested("messages.discord");
         if(!$config['enabled']) return;
         if(($msg = $event->getMessage()) instanceof Webhook){
@@ -154,10 +156,10 @@ class EventListener implements Listener{
         $message = str_replace(['{MESSAGE}', '{message'], $content, $message);
         $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
         $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s',(int)$msg->getTimestamp()??time()), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)$msg->getTimestamp()??time()), $message);
+        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', (int)($msg->getTimestamp()??time())), $message);
+        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)($msg->getTimestamp()??time())), $message);
         if(!is_string($message)){
-            throw new PluginException("A string is always expected, got '".gettype($message)."'");
+            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
         }
 
         //Broadcast.
