@@ -57,12 +57,8 @@ jobs:
           key: "composer-v2-cache-${{ hashFiles('./composer.lock') }}"
           restore-keys: |
             composer-v2-cache-
-      - name: Install Composer dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: php composer.phar install --no-interaction
 
       - name: Update Composer dependencies
-        if: steps.composer-cache.outputs.cache-hit == 'true'
         run: php composer.phar update --no-interaction
 
       - name: Run PHPStan
