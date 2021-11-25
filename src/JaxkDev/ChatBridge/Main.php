@@ -36,6 +36,7 @@ class Main extends PluginBase{
         }
         // $this->updateConfig(); For v1.1 or v2.0 whichever changes config first.
         // TODO $this->verifyConfig(); //Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
+        // TODO Option for showing console commands in Discord not just player executed commands.
         $this->listener = new EventListener($this);
     }
 

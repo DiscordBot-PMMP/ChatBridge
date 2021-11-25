@@ -66,7 +66,7 @@ class EventListener implements Listener{
      */
     public function onMinecraftMessage(PlayerChatEvent $event): void{
         if(!$this->ready){
-            //TODO, Should we stack the messages up and send all 3/s when discords ready or....
+            //Unlikely to happen, discord will most likely be ready before anyone even joins.
             $this->plugin->getLogger()->debug("Ignoring chat event, discord is not ready.");
             return;
         }
@@ -76,31 +76,48 @@ class EventListener implements Listener{
         if(!$config['enabled']) return;
 
         $player = $event->getPlayer();
+        $message = $event->getMessage();
+        $world = $player->getLevelNonNull()->getName();
 
         $from_worlds = is_array($config["from_worlds"]) ? $config["from_worlds"] : [$config["from_worlds"]];
         if(!in_array("*", $from_worlds)){
             //Only specific worlds.
-            $world = $player->getLevelNonNull()->getName();
             if(!in_array($world, $from_worlds)){
                 $this->plugin->getLogger()->debug("Ignoring chat event, world '$world' is not listed.");
                 return;
             }
         }
 
+        $formatter = function(string $text) use ($player, $message, $world): string{
+            $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
+            $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
+            $text = str_replace(["{MESSAGE}", "{message}"], $message, $text);
+            $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{WORLD}", "{world}", "{LEVEL}", "{level}"], $world, $text);
+            $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
+            $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
+            return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
+        };
+
         $embed = null;
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
-                $fields[] = new Field($field["name"], $field["value"], $field["inline"]);
+                $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed($embed_config["title"], Embed::TYPE_RICH, $embed_config["description"],
+            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+                ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"]), null, null, null, new Author($embed_config["author"]), $fields);
+                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
+                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $config["format"]["text"]??"", $embed);
+            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
             $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft message event, '{$rejection->getMessage()}'");
             });
@@ -192,8 +209,8 @@ class EventListener implements Listener{
         $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
         $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
         $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', $member->getJoinTimestamp()), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', $member->getJoinTimestamp()), $message);
+        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', time()), $message);
+        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', time()), $message);
         if(!is_string($message)){
             throw new AssertionError("A string is always expected, got '".gettype($message)."'");
         }
