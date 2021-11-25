@@ -61,6 +61,7 @@ leave:
 
   minecraft:
     enabled: true
+    ignore_transferred: true
     format:
       text: ""
       embed:

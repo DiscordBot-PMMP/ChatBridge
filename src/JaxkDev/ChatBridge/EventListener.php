@@ -30,6 +30,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\server\CommandEvent;
 use pocketmine\Player;
 use pocketmine\utils\Config;
@@ -252,6 +253,7 @@ class EventListener implements Listener{
 
         $player = $event->getPlayer();
         $reason = $event->getQuitReason();
+        if($reason === "transfer" and $config["ignore_transferred"]) return;
 
         $formatter = function(string $text) use ($player, $reason): string{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
@@ -284,6 +286,57 @@ class EventListener implements Listener{
             $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
             $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft leave event, '{$rejection->getMessage()}'");
+            });
+        }
+    }
+
+    public function onMinecraftTransferred(PlayerTransferEvent $event): void{
+        if(!$this->ready){
+            //Unlikely to happen, discord will most likely be ready before anyone even joins.
+            $this->plugin->getLogger()->debug("Ignoring transfer event, discord is not ready.");
+            return;
+        }
+
+        /** @var array $config */
+        $config = $this->config->getNested("transferred.minecraft");
+        if(!$config['enabled']) return;
+
+        $player = $event->getPlayer();
+        $address = $event->getAddress();
+        $port = $event->getPort();
+
+        $formatter = function(string $text) use ($player, $address, $port): string{
+            $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
+            $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
+            $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{SERVER_ADDRESS}", "{server_address}"], $address, $text);
+            $text = str_replace(["{SERVER_PORT}", "{server_port}"], strval($port), $text);
+            $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
+            $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
+            return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
+        };
+
+        $embed = null;
+        $embed_config = $config["format"]["embed"];
+        if($embed_config["enabled"]){
+            $fields = [];
+            foreach($embed_config["fields"] as $field){
+                $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
+            }
+            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+                ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
+                $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
+                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
+                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+        }
+
+        foreach($config["to_discord_channels"] as $cid){
+            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
+            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+                $this->plugin->getLogger()->warning("Failed to send discord message on minecraft transfer event, '{$rejection->getMessage()}'");
             });
         }
     }
