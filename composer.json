@@ -1,7 +1,7 @@
 {
     "minimum-stability": "dev",
     "require": {
-        "php": "^7.4|^8.0"
+        "php": "^8.0"
     },
     "require-dev": {
         "jaxkdev/discordbot": "^2",

@@ -7,6 +7,6 @@ website: https://github.com/DiscordBot-PMMP/ChatBridge
 
 api: 3.7.0
 extensions:
-  core: ">=7.4" #aka PHP Version.
+  core: ">=8.0" #aka PHP Version.
 depend:
   - DiscordBot

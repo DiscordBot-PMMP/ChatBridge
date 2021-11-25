@@ -70,7 +70,7 @@ class Main extends PluginBase{
         }
         $ver = new VersionString($discordBot->getDescription()->getVersion());
         if($ver->getMajor() !== 2){
-            throw new PluginException("Incompatible dependency 'DiscordBot' detected, v2.x.y is required however v{$ver->getBaseVersion()}) is installed, see here https://github.com/DiscordBot-PMMP/DiscordBot/releases for downloads.");
+            throw new PluginException("Incompatible dependency 'DiscordBot' detected, v2.x.y is required however v{$ver->getBaseVersion()}) is installed, see https://github.com/DiscordBot-PMMP/DiscordBot/releases for downloads.");
         }
         if(!$discordBot instanceof DiscordBot){
             throw new PluginException("Incompatible dependency 'DiscordBot' detected.");
