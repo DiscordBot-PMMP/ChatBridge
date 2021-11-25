@@ -28,7 +28,9 @@ use JaxkDev\DiscordBot\Plugin\Events\MessageSent;
 use JaxkDev\DiscordBot\Plugin\Storage;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\server\CommandEvent;
 use pocketmine\Player;
 use pocketmine\utils\Config;
 
@@ -125,7 +127,7 @@ class EventListener implements Listener{
         }
     }
 
-    public function onMinecraftCommand(PlayerCommandPreprocessEvent $event): void{
+    public function onMinecraftCommand(CommandEvent $event): void{
         if(!$this->ready){
             //Unlikely to happen, discord will most likely be ready before anyone even joins.
             $this->plugin->getLogger()->debug("Ignoring command event, discord is not ready.");
@@ -135,11 +137,12 @@ class EventListener implements Listener{
         /** @var array $config */
         $config = $this->config->getNested("commands.minecraft");
         if(!$config['enabled']) return;
+        $player = $event->getSender();
+        if(!$player instanceof Player) return;
 
-        $player = $event->getPlayer();
-        $message = $event->getMessage();
+        $message = $event->getCommand();
         $args = explode(" ", $message);
-        $command = substr(array_shift($args), 1);
+        $command = array_shift($args);
         $world = $player->getLevelNonNull()->getName();
 
         $from_worlds = is_array($config["from_worlds"]) ? $config["from_worlds"] : [$config["from_worlds"]];
@@ -185,6 +188,102 @@ class EventListener implements Listener{
             $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
             $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft command event, '{$rejection->getMessage()}'");
+            });
+        }
+    }
+
+    public function onMinecraftJoin(PlayerJoinEvent $event): void{
+        if(!$this->ready){
+            //Unlikely to happen, discord will most likely be ready before anyone even joins.
+            $this->plugin->getLogger()->debug("Ignoring join event, discord is not ready.");
+            return;
+        }
+
+        /** @var array $config */
+        $config = $this->config->getNested("join.minecraft");
+        if(!$config['enabled']) return;
+
+        $player = $event->getPlayer();
+
+        $formatter = function(string $text) use ($player): string{
+            $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
+            $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
+            $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
+            $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
+            return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
+        };
+
+        $embed = null;
+        $embed_config = $config["format"]["embed"];
+        if($embed_config["enabled"]){
+            $fields = [];
+            foreach($embed_config["fields"] as $field){
+                $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
+            }
+            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+                ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
+                $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
+                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
+                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+        }
+
+        foreach($config["to_discord_channels"] as $cid){
+            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
+            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+                $this->plugin->getLogger()->warning("Failed to send discord message on minecraft join event, '{$rejection->getMessage()}'");
+            });
+        }
+    }
+
+    public function onMinecraftLeave(PlayerQuitEvent $event): void{
+        if(!$this->ready){
+            //Unlikely to happen, discord will most likely be ready before anyone even joins.
+            $this->plugin->getLogger()->debug("Ignoring leave event, discord is not ready.");
+            return;
+        }
+
+        /** @var array $config */
+        $config = $this->config->getNested("leave.minecraft");
+        if(!$config['enabled']) return;
+
+        $player = $event->getPlayer();
+        $reason = $event->getQuitReason();
+
+        $formatter = function(string $text) use ($player, $reason): string{
+            $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
+            $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
+            $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{REASON}", "{reason}"], $reason, $text);
+            $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
+            $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
+            return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
+        };
+
+        $embed = null;
+        $embed_config = $config["format"]["embed"];
+        if($embed_config["enabled"]){
+            $fields = [];
+            foreach($embed_config["fields"] as $field){
+                $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
+            }
+            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+                ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
+                $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
+                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
+                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+        }
+
+        foreach($config["to_discord_channels"] as $cid){
+            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
+            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+                $this->plugin->getLogger()->warning("Failed to send discord message on minecraft leave event, '{$rejection->getMessage()}'");
             });
         }
     }

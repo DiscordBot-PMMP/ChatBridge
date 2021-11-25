@@ -61,13 +61,12 @@ leave:
 
   minecraft:
     enabled: true
-    from_worlds: "*"
     format:
       text: ""
       embed:
         enabled: true
         title: "Player Left"
-        description: "- **{USERNAME}**"
+        description: "- **{USERNAME}** left, reason: {REASON}"
         author: "ChatBridge"
         url: null
         footer: "This is a footer"
