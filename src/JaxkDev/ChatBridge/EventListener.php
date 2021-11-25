@@ -23,6 +23,7 @@ use JaxkDev\DiscordBot\Plugin\ApiRejection;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordClosed;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordReady;
 use JaxkDev\DiscordBot\Plugin\Events\MemberJoined;
+use JaxkDev\DiscordBot\Plugin\Events\MemberLeft;
 use JaxkDev\DiscordBot\Plugin\Events\MessageSent;
 use JaxkDev\DiscordBot\Plugin\Storage;
 use pocketmine\event\Listener;
@@ -111,7 +112,7 @@ class EventListener implements Listener{
     /**
      * @priority MONITOR
      */
-    public function onDiscordJoin(MemberJoined $event): void{
+    public function onDiscordMemberJoin(MemberJoined $event): void{
         /** @var array $config */
         $config = $this->config->getNested("join.discord");
         if(!$config['enabled']) return;
@@ -158,6 +159,50 @@ class EventListener implements Listener{
     }
 
     /**
+     * Who doesn't like some copy/paste?
+     * @priority MONITOR
+     */
+    public function onDiscordMemberLeave(MemberLeft $event): void{
+        /** @var array $config */
+        $config = $this->config->getNested("leave.discord");
+        if(!$config['enabled']) return;
+
+        $member = $event->getMember();
+        $server_id = $member->getServerId();
+        if(!in_array($server_id, $config["servers"])){
+            $this->plugin->getLogger()->debug("Ignoring member leave event, discord server '$server_id' is not in config list.");
+            return;
+        }
+
+        $server = Storage::getServer($server_id);
+        if($server === null){
+            //shouldn't happen, but can.
+            $this->plugin->getLogger()->warning("Failed to process discord leave join event, server '$server_id' does not exist in local storage.");
+            return;
+        }
+        $user = Storage::getUser($member->getUserId());
+        if($user === null){
+            //shouldn't happen, but can.
+            $this->plugin->getLogger()->warning("Failed to process discord member leave event, user '{$member->getUserId()}' does not exist in local storage.");
+            return;
+        }
+
+        //Format message.
+        $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
+        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
+        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
+        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', $member->getJoinTimestamp()), $message);
+        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', $member->getJoinTimestamp()), $message);
+        if(!is_string($message)){
+            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
+        }
+
+        //Broadcast.
+        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+    }
+
+    /**
      * @priority MONITOR
      */
     public function onDiscordMessage(MessageSent $event): void{
@@ -166,6 +211,17 @@ class EventListener implements Listener{
         if(!$config['enabled']) return;
         if(($msg = $event->getMessage()) instanceof Webhook){
             $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via webhook.");
+            return;
+        }
+
+        $channel = Storage::getChannel($msg->getChannelId());
+        if($channel === null){
+            //shouldn't happen, but can.
+            $this->plugin->getLogger()->warning("Failed to process discord message event, channel '{$msg->getChannelId()}' does not exist in local storage.");
+            return;
+        }
+        if(!in_array($channel->getId()??"Will never be null", $config['from_channels'])){
+            $this->plugin->getLogger()->debug("Ignoring message from channel '{$channel->getId()}', ID is not in list.");
             return;
         }
 
@@ -178,15 +234,7 @@ class EventListener implements Listener{
         $server = Storage::getServer($server_id);
         if($server === null){
             //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, server
-            '{$msg->getServerId()}' does not exist in local storage.");
-            return;
-        }
-        $channel = Storage::getChannel($msg->getChannelId());
-        if($channel === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, channel
-            '{$msg->getChannelId()}' does not exist in local storage.");
+            $this->plugin->getLogger()->warning("Failed to process discord message event, server '{$msg->getServerId()}' does not exist in local storage.");
             return;
         }
         $member = Storage::getMember($msg->getAuthorId()??""); //Member is not required, but preferred.
@@ -194,18 +242,13 @@ class EventListener implements Listener{
         $user = Storage::getUser($user_id);
         if($user === null){
             //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, author user 
-            '$user_id' does not exist in local storage.");
+            $this->plugin->getLogger()->warning("Failed to process discord message event, author user '$user_id' does not exist in local storage.");
             return;
         }
         $content = trim($msg->getContent());
         if(strlen($content) === 0){
             //Files or other type of messages.
             $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', No text content.");
-            return;
-        }
-        if(!in_array($channel->getId()??"Will never be null", $config['from_channels'])){
-            $this->plugin->getLogger()->debug("Ignoring message from channel '{$channel->getId()}', ID is not in list.");
             return;
         }
 
@@ -223,10 +266,7 @@ class EventListener implements Listener{
         }
 
         //Broadcast.
-        $worlds = $config['to_minecraft_worlds'];
-        $players = $this->getPlayersInWorlds($worlds);
-
-        $this->plugin->getServer()->broadcastMessage($message, $players);
+        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
     }
 
     /**

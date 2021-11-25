@@ -35,7 +35,7 @@ class Main extends PluginBase{
             throw new PluginException("Invalid config file, delete config.yml and restart server to restore default config.");
         }
         // $this->updateConfig(); For v1.1 or v2.0 whichever changes config first.
-        // $this->verifyConfig(); //Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
+        // TODO $this->verifyConfig(); //Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
         $this->listener = new EventListener($this);
     }
 
