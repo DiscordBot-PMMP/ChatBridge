@@ -118,7 +118,7 @@ transferred:
       embed:
         enabled: true
         title: "Player Transferred"
-        description: "**{USERNAME}** -> `{ADDRESS}:{PORT}`"
+        description: "**{USERNAME}** -> `{SERVER_ADDRESS}:{SERVER_PORT}`"
         author: "ChatBridge"
         url: null
         footer: "This is a footer"
