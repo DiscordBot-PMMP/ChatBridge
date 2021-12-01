@@ -32,7 +32,7 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\server\CommandEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\Config;
 
 class EventListener implements Listener{
@@ -81,7 +81,7 @@ class EventListener implements Listener{
 
         $player = $event->getPlayer();
         $message = $event->getMessage();
-        $world = $player->getLevelNonNull()->getName();
+        $world = $player->getWorld()->getDisplayName();
 
         $from_worlds = is_array($config["from_worlds"]) ? $config["from_worlds"] : [$config["from_worlds"]];
         if(!in_array("*", $from_worlds)){
@@ -97,9 +97,9 @@ class EventListener implements Listener{
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
             $text = str_replace(["{MESSAGE}", "{message}"], $message, $text);
             $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
-            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
-            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
-            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()->toString(), $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getNetworkSession()->getIp(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getNetworkSession()->getPort()), $text);
             $text = str_replace(["{WORLD}", "{world}", "{LEVEL}", "{level}"], $world, $text);
             $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
             $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
@@ -144,7 +144,7 @@ class EventListener implements Listener{
         $message = $event->getCommand();
         $args = explode(" ", $message);
         $command = array_shift($args);
-        $world = $player->getLevelNonNull()->getName();
+        $world = $player->getWorld()->getDisplayName();
 
         $from_worlds = is_array($config["from_worlds"]) ? $config["from_worlds"] : [$config["from_worlds"]];
         if(!in_array("*", $from_worlds)){
@@ -162,9 +162,9 @@ class EventListener implements Listener{
             $text = str_replace(["{COMMAND}", "{command}"], $command, $text);
             $text = str_replace(["{ARGS}", "{args}"], implode(" ", $args), $text);
             $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
-            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
-            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
-            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()->toString(), $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getNetworkSession()->getIp(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getNetworkSession()->getPort()), $text);
             $text = str_replace(["{WORLD}", "{world}", "{LEVEL}", "{level}"], $world, $text);
             $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
             $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
@@ -210,9 +210,9 @@ class EventListener implements Listener{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
             $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
-            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
-            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
-            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()->toString(), $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getNetworkSession()->getIp(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getNetworkSession()->getPort()), $text);
             $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
             $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
@@ -259,9 +259,9 @@ class EventListener implements Listener{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
             $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
-            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
-            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
-            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()->toString(), $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getNetworkSession()->getIp(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getNetworkSession()->getPort()), $text);
             $text = str_replace(["{REASON}", "{reason}"], $reason, $text);
             $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
             $text = str_replace(["{TIME-2}", "{time-2}"], date("H:i", time()), $text);
@@ -309,9 +309,9 @@ class EventListener implements Listener{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
             $text = str_replace(["{XUID}", "{xuid}"], $player->getXuid(), $text);
-            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()?->toString()??"", $text);
-            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getAddress(), $text);
-            $text = str_replace(["{PORT}", "{port}"], strval($player->getPort()), $text);
+            $text = str_replace(["{UUID}", "{uuid}"], $player->getUniqueId()->toString(), $text);
+            $text = str_replace(["{ADDRESS}", "{address}", "{IP}", "{ip}"], $player->getNetworkSession()->getIp(), $text);
+            $text = str_replace(["{PORT}", "{port}"], strval($player->getNetworkSession()->getPort()), $text);
             $text = str_replace(["{SERVER_ADDRESS}", "{server_address}"], $address, $text);
             $text = str_replace(["{SERVER_PORT}", "{server_port}"], strval($port), $text);
             $text = str_replace(["{TIME}", "{time}", "{TIME-1}", "{time-1}"], date("H:i:s", time()), $text);
@@ -515,11 +515,11 @@ class EventListener implements Listener{
             $players = $this->plugin->getServer()->getOnlinePlayers();
         }else{
             foreach((is_array($worlds) ? $worlds : [$worlds]) as $world){
-                $level = $this->plugin->getServer()->getLevelByName($world);
-                if($level === null){
+                $world = $this->plugin->getServer()->getWorldManager()->getWorldByName($world);
+                if($world === null){
                     $this->plugin->getLogger()->warning("World '$world' specified in config.yml does not exist.");
                 }else{
-                    $players = array_merge($players, $level->getPlayers());
+                    $players = array_merge($players, $world->getPlayers());
                 }
             }
         }

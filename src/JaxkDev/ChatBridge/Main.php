@@ -27,11 +27,11 @@ class Main extends PluginBase{
     /** @var EventListener */
     private $listener;
 
-    public function onLoad(){
+    public function onLoad(): void{
         $this->checkPrerequisites();
         $this->checkOldEventsFile();
         $this->saveAllResources();
-        if(!$this->getConfig()->check()){
+        if($this->getConfig()->getAll() === []){
             throw new PluginException("Invalid config file, delete config.yml and restart server to restore default config.");
         }
         // $this->updateConfig(); For v1.1 or v2.0 whichever changes config first.
@@ -40,7 +40,7 @@ class Main extends PluginBase{
         $this->listener = new EventListener($this);
     }
 
-    public function onEnable(){
+    public function onEnable(): void{
         $this->getServer()->getPluginManager()->registerEvents($this->listener, $this);
     }
 
