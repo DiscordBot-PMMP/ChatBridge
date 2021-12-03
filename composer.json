@@ -11,5 +11,6 @@
         "jaxkdev/discordbot": "^2",
         "phpstan/phpstan": "^1.2",
         "pocketmine/pocketmine-mp": "^4"
-    }
+    },
+    "minimum-stability": "dev"
 }
