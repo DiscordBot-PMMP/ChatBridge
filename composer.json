@@ -1,10 +1,14 @@
 {
-    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "JaxkDev\\ChatBridge\\": "src/"
+        }
+    },
     "require": {
         "php": "^8.0"
     },
     "require-dev": {
-        "jaxkdev/discordbot": "dev-development-pm4",
+        "jaxkdev/discordbot": "^2",
         "phpstan/phpstan": "^1.2",
         "pocketmine/pocketmine-mp": "^4"
     }
