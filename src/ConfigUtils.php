@@ -31,7 +31,7 @@ abstract class ConfigUtils{
 
     /**
      * Verifies the config's keys and values, returning any keys and a relevant message.
-     * @param array<string, mixed> $config
+     * @param array $config
      * @return string[]
      */
     static public function verify(array $config): array{
@@ -103,7 +103,8 @@ abstract class ConfigUtils{
 
     /**
      * Verifies the config's generic discord section.
-     * @param array<string, mixed> $config
+     * @param string $event
+     * @param array $config
      * @return string[]
      */
     static private function verify_discord(string $event, array $config): array{

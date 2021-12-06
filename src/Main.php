@@ -143,7 +143,7 @@ class Main extends PluginBase{
             $this->getServer()->getPluginManager()->disablePlugin($this);
             return false;
         }
-        $this->getLogger()->debug("Config loaded, version: {$config["version"]}");
+        $this->getLogger()->debug("Config loaded, version: ".$config["version"]);
 
         if(intval($config["version"]) !== ConfigUtils::VERSION){
             $old = $config["version"];
