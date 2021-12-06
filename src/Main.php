@@ -16,6 +16,7 @@ use JaxkDev\DiscordBot\Plugin\Main as DiscordBot;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 use pocketmine\utils\VersionString;
 use Phar;
 
@@ -31,22 +32,17 @@ class Main extends PluginBase{
         $this->checkPrerequisites();
         $this->checkOldEventsFile();
         $this->saveAllResources();
-        if($this->getConfig()->getAll() === []){
-            throw new PluginException("Invalid config file, delete config.yml and restart server to restore default config.");
-        }
-        // $this->updateConfig(); For v1.1 or v2.0 whichever changes config first.
-        // TODO $this->verifyConfig(); //Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
+        // TODO Channel/Server ID verification will take place during event handling, ID format can be checked with DiscordBot Utils
         // TODO Option for showing console commands in Discord not just player executed commands.
         $this->listener = new EventListener($this);
     }
 
     public function onEnable(): void{
+        if(!$this->loadConfig()) return;
         $this->getServer()->getPluginManager()->registerEvents($this->listener, $this);
     }
 
     private function saveAllResources(): void{
-        $this->saveResource("config.yml");
-
         //Help files.
         $dir = scandir(Phar::running(true)."/resources/help");
         if($dir === false){
@@ -135,6 +131,45 @@ class Main extends PluginBase{
                 $this->getLogger()->debug("Moved '{$this->discord->getDataFolder()}events.yml' to '{$this->getDataFolder()}old_events.yml'.");
             }
         }
+    }
+
+    private function loadConfig(): bool{
+        $this->getLogger()->debug("Loading configuration...");
+
+        /** @var array<string, mixed> $config */
+        $config = $this->getConfig()->getAll();
+        if($config === [] or !is_int($config["version"]??"")){
+            $this->getLogger()->critical("Failed to parse config.yml");
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return false;
+        }
+        $this->getLogger()->debug("Config loaded, version: {$config["version"]}");
+
+        if(intval($config["version"]) !== ConfigUtils::VERSION){
+            $old = $config["version"];
+            $this->getLogger()->info("Updating your config from v".$old." to v".ConfigUtils::VERSION);
+            ConfigUtils::update($config);
+            rename($this->getDataFolder()."config.yml", $this->getDataFolder()."config.yml.v".$old);
+            $this->getConfig()->setAll($config);
+            $this->getConfig()->save();
+            $this->getLogger()->notice("Config updated, old config was saved to '{$this->getDataFolder()}config.yml.v".$old."'");
+        }
+
+        $this->getLogger()->debug("Verifying config...");
+        $result_raw = ConfigUtils::verify($config);
+        if(sizeof($result_raw) !== 0){
+            $result = TextFormat::RED."There were some problems with your config.yml, see below:\n".TextFormat::RESET;
+            foreach($result_raw as $value){
+                $result .= "$value\n";
+            }
+            $this->getLogger()->error(rtrim($result));
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return false;
+        }
+        $this->getLogger()->debug("Config verified.");
+
+        //Config is now updated and verified.
+        return true;
     }
 
     public function getDiscord(): DiscordBot{
