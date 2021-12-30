@@ -2,6 +2,4 @@ parameters:
     level: max
     paths:
         - src
-    bootstrapFiles:
-        - test/bootstrap.php
     checkMissingIterableValueType: false
