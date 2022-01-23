@@ -38,7 +38,14 @@ class Main extends PluginBase{
     }
 
     public function onEnable(): void{
-        if(!$this->loadConfig()) return;
+        if($this->getServer()->getPluginManager()->getPlugin("DiscordBot")?->isEnabled() !== true){
+            $this->getLogger()->critical("DiscordBot is not enabled! Dependency must be enabled for the plugin to operate.");
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return;
+        }
+        if(!$this->loadConfig()){
+            return;
+        }
         $this->getServer()->getPluginManager()->registerEvents($this->listener, $this);
     }
 
@@ -61,7 +68,9 @@ class Main extends PluginBase{
 
         //DiscordBot
         $discordBot = $this->getServer()->getPluginManager()->getPlugin("DiscordBot");
-        if($discordBot === null) return; //Will never happen.
+        if($discordBot === null){
+            return; //Will never happen.
+        }
         if($discordBot->getDescription()->getWebsite() !== "https://github.com/DiscordBot-PMMP/DiscordBot"){
             throw new PluginException("Incompatible dependency 'DiscordBot' detected, see https://github.com/DiscordBot-PMMP/DiscordBot/releases for the correct plugin.");
         }

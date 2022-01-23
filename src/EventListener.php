@@ -31,6 +31,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerTransferEvent;
+use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\event\server\CommandEvent;
 use pocketmine\player\Player;
 use pocketmine\utils\Config;
@@ -62,6 +63,14 @@ class EventListener implements Listener{
         $this->plugin->getServer()->getPluginManager()->disablePlugin($this->plugin);
     }
 
+    public function onDiscordDisabled(PluginDisableEvent $event): void{
+        //Sometimes discordbot can be disabled without it emitting discord closed event. (startup errors)
+        if($event->getPlugin()->getName() === "DiscordBot"){
+            $this->plugin->getLogger()->critical("DiscordBot has been disabled, disabling plugin.");
+            $this->plugin->getServer()->getPluginManager()->disablePlugin($this->plugin);
+        }
+    }
+
     //--- Minecraft Events -> Discord Server ---//
 
     /**
@@ -77,7 +86,9 @@ class EventListener implements Listener{
 
         /** @var array $config */
         $config = $this->config->getNested("messages.minecraft");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $player = $event->getPlayer();
         $message = $event->getMessage();
@@ -137,9 +148,13 @@ class EventListener implements Listener{
 
         /** @var array $config */
         $config = $this->config->getNested("commands.minecraft");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
         $player = $event->getSender();
-        if(!$player instanceof Player) return;
+        if(!$player instanceof Player){
+            return;
+        }
 
         $message = $event->getCommand();
         $args = explode(" ", $message);
@@ -202,7 +217,9 @@ class EventListener implements Listener{
 
         /** @var array $config */
         $config = $this->config->getNested("join.minecraft");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $player = $event->getPlayer();
 
@@ -249,11 +266,15 @@ class EventListener implements Listener{
 
         /** @var array $config */
         $config = $this->config->getNested("leave.minecraft");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $player = $event->getPlayer();
         $reason = $event->getQuitReason();
-        if($reason === "transfer" and $config["ignore_transferred"]) return;
+        if($reason === "transfer" and $config["ignore_transferred"]){
+            return;
+        }
 
         $formatter = function(string $text) use ($player, $reason): string{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
@@ -299,7 +320,9 @@ class EventListener implements Listener{
 
         /** @var array $config */
         $config = $this->config->getNested("transferred.minecraft");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $player = $event->getPlayer();
         $address = $event->getAddress();
@@ -349,7 +372,9 @@ class EventListener implements Listener{
     public function onDiscordMemberJoin(MemberJoined $event): void{
         /** @var array $config */
         $config = $this->config->getNested("join.discord");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $member = $event->getMember();
         $server_id = $member->getServerId();
@@ -399,7 +424,9 @@ class EventListener implements Listener{
     public function onDiscordMemberLeave(MemberLeft $event): void{
         /** @var array $config */
         $config = $this->config->getNested("leave.discord");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
 
         $member = $event->getMember();
         $server_id = $member->getServerId();
@@ -442,7 +469,9 @@ class EventListener implements Listener{
     public function onDiscordMessage(MessageSent $event): void{
         /** @var array $config */
         $config = $this->config->getNested("messages.discord");
-        if(!$config['enabled']) return;
+        if(!$config['enabled']){
+            return;
+        }
         if(($msg = $event->getMessage()) instanceof Webhook){
             $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via webhook.");
             return;
