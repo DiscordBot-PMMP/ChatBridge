@@ -1,6 +1,11 @@
 ---
 version: 1
 
+presence:
+  status: "Idle"
+  type: "Playing"
+  message: "on a PMMP Server!"
+
 messages:
   discord:
     enabled: true

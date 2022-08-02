@@ -36,7 +36,7 @@ abstract class ConfigUtils{
      */
     static public function verify(array $config): array{
         $result = [];
-        $keys = ["version", "messages", "commands", "leave", "join", "transferred"];
+        $keys = ["version", "presence", "messages", "commands", "leave", "join", "transferred"];
         foreach(array_keys($config) as $event){
             if(!in_array($event, $keys)){
                 //Event key is invalid.
@@ -49,6 +49,27 @@ abstract class ConfigUtils{
                     if($config[$event] !== self::VERSION){
                         //Should never happen.
                         $result[] = "Invalid version '$event' found.";
+                    }
+                    break;
+                case "presence":
+                    if(!is_array($config[$event])){
+                        $result[] = "Invalid value for '$event' found, array expected.";
+                    }else{
+                        if(!isset($config[$event]["status"])){
+                            $result[] = "Missing 'status' key for '$event' found.";
+                        }elseif(!in_array(strtolower($config[$event]["status"]), ["online", "idle", "dnd", "offline"])){
+                            $result[] = "Invalid value for 'status' key for '$event' found, one of online,idle,dnd,offline expected.";
+                        }
+                        if(!isset($config[$event]["type"])){
+                            $result[] = "Missing 'type' key for '$event' found.";
+                        }elseif(!in_array(strtolower($config[$event]["type"]), ["playing", "play", "listening", "listen", "watching", "watch"])){
+                            $result[] = "Invalid value for 'type' key for '$event' found, one of playing,listening,watching expected.";
+                        }
+                        if(!isset($config[$event]["message"])){
+                            $result[] = "Missing 'message' key for '$event' found.";
+                        }elseif(!is_string($config[$event]["message"])){
+                            $result[] = "Invalid value for 'message' key for '$event' found, string expected.";
+                        }
                     }
                     break;
                 case "messages":

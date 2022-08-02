@@ -13,6 +13,8 @@
 namespace JaxkDev\ChatBridge;
 
 use AssertionError;
+use JaxkDev\DiscordBot\Models\Activity;
+use JaxkDev\DiscordBot\Models\Member;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Author;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Embed;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Field;
@@ -54,6 +56,25 @@ class EventListener implements Listener{
 
     public function onDiscordReady(DiscordReady $event): void{
         $this->ready = true;
+
+        //Update presence.
+        $type = match(strtolower(strval($this->config->getNested("presence.type", "Playing")))){
+            'listening', 'listen' => Activity::TYPE_LISTENING,
+            'watching', 'watch' => Activity::TYPE_WATCHING,
+            default => Activity::TYPE_PLAYING,
+        };
+        $status = match(strtolower(strval($this->config->getNested("presence.status", "Online")))){
+            'idle' => Member::STATUS_IDLE,
+            'dnd' => Member::STATUS_DND,
+            'offline' => Member::STATUS_OFFLINE,
+            default => Member::STATUS_ONLINE,
+        };
+        $activity = new Activity(strval($this->config->getNested("presence.message", "on a PMMP Server!")), $type);
+        $this->plugin->getDiscord()->getApi()->updateBotPresence($activity, $status)->then(function(){
+            $this->plugin->getLogger()->debug("Presence successfully updated.");
+        }, function(ApiRejection $rejection){
+            $this->plugin->getLogger()->error("Failed to update presence: ".$rejection->getMessage());
+        });
     }
 
     public function onDiscordClosed(DiscordClosed $event): void{
