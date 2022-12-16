@@ -91,6 +91,10 @@ abstract class ConfigUtils{
                     }elseif(!is_string($config[$event]["minecraft"]["from_worlds"]) and !is_array($config[$event]["minecraft"]["from_worlds"])){
                         $result[] = "Invalid value for key '".$event.".minecraft.from_worlds', expected array or string.";
                     }
+                    var_dump($config[$event]["minecraft"]);
+                    if(!isset($config[$event]["minecraft"]["escapes"])){
+                        $result[] = "Missing key '".$event.".minecraft.escapes'";
+                    }
                     break;
                 case "join":
                     $result = array_merge($result, self::verify_discord($event, $config));

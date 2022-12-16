@@ -31,6 +31,8 @@ messages:
         fields: []
     to_discord_channels:
       - "123456789"
+    escapes:
+      - "@"
 
 
 commands:

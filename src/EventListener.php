@@ -124,6 +124,11 @@ class EventListener implements Listener{
             }
         }
 
+        $escapes = is_array($config["escapes"]) ? $config["escapes"] : [$config["escapes"]];
+        foreach($escapes as $escape){
+            $message = str_replace($escape, $escape." ", $message);
+        }
+
         $formatter = function(string $text) use ($player, $message, $world): string{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
@@ -190,8 +195,7 @@ class EventListener implements Listener{
                 return;
             }
         }
-
-        $formatter = function(string $text) use ($player, $message, $world, $command, $args): string{
+                $formatter = function(string $text) use ($player, $message, $world, $command, $args): string{
             $text = str_replace(["{USERNAME}", "{username}", "{PLAYER}", "{player}"], $player->getName(), $text);
             $text = str_replace(["{DISPLAYNAME}", "{displayname}", "{DISPLAY_NAME}", "{display_name}", "{NICKNAME}", "{nickname}"], $player->getDisplayName(), $text);
             $text = str_replace(["{MESSAGE}", "{message}"], $message, $text);
