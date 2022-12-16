@@ -72,8 +72,8 @@ messages:                                               <- Messages section allo
       - "12345678912345678"                             <- Discord channel IDs
       - "42356325325312412"
 
-    escapes:                                             <- List of characters to escape "{MESSAGE}", to disable, delete the "- @" line and replace it with "escapes: []".
-      - "@"                                              <- A space is added after every '@'
+    escapes:                                            <- List of characters to escape "{MESSAGE}", to disable, delete the "- @" line and replace it with "escapes: []".
+      - "@"                                             <- A space is added after every '@'
 
 commands:                                               <- This is the config for commands run in minecraft.
   minecraft:
