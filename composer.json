@@ -4,13 +4,10 @@
             "JaxkDev\\ChatBridge\\": "src/"
         }
     },
-    "require": {
-        "php": "^8.0"
-    },
     "require-dev": {
-        "jaxkdev/discordbot": "^2",
-        "phpstan/phpstan": "^1.8.2",
-        "pocketmine/pocketmine-mp": "^4"
+        "jaxkdev/discordbot": "^3",
+        "phpstan/phpstan": "^1",
+        "pocketmine/pocketmine-mp": "^5"
     },
     "minimum-stability": "dev"
 }
