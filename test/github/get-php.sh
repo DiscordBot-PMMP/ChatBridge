@@ -1,6 +1,8 @@
-#Change this to void cache, 123456780
+PHP=$"8.1" #Change this to void cache, 002
+PM=$"5"
+GIT_TAG=$"php-$PHP-latest"
 
-wget -q -O - "https://jenkins.pmmp.io/job/PHP-8.0-Aggregate/lastSuccessfulBuild/artifact/PHP-8.0-Linux-x86_64.tar.gz" | tar -zx > /dev/null 2>&1
+wget -q -O - "https://github.com/pmmp/PHP-Binaries/releases/download/$GIT_TAG/PHP-Linux-x86_64-PM$PM.tar.gz" | tar -zx > /dev/null 2>&1
 chmod +x ./bin/php7/bin/*
 
 EXTENSION_DIR=$(find "$(pwd)/bin" -name *debug-zts*) #make sure this only captures from `bin` in case the user renamed their old binary folder
