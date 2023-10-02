@@ -17,14 +17,15 @@ use JaxkDev\DiscordBot\Plugin\Utils;
 
 abstract class ConfigUtils{
 
-    const VERSION = 1;
+    const VERSION = 2;
 
     // Map all versions to a static function.
-    private const _PATCH_MAP = [];
+    private const _PATCH_MAP = [
+        1 => "patch_1",
+    ];
 
     static public function update(array &$config): void{
         for($i = (int)$config["version"]; $i < self::VERSION; $i += 1){
-            /** @phpstan-ignore-next-line */
             $config = forward_static_call([self::class, self::_PATCH_MAP[$i]], $config);
         }
     }
@@ -55,6 +56,11 @@ abstract class ConfigUtils{
                     if(!is_array($config[$event])){
                         $result[] = "Invalid value for '$event' found, array expected.";
                     }else{
+                        if(!isset($config[$event]["enabled"])){
+                            $result[] = "Missing 'enabled' key for '$event' found.";
+                        }elseif(!in_array($config[$event]["enabled"], [true, false])){
+                            $result[] = "Invalid value for 'enabled' key for '$event' found, boolean expected (true/false).";
+                        }
                         if(!isset($config[$event]["status"])){
                             $result[] = "Missing 'status' key for '$event' found.";
                         }elseif(!in_array(strtolower($config[$event]["status"]), ["online", "idle", "dnd", "offline"])){
@@ -296,5 +302,11 @@ abstract class ConfigUtils{
             }
         }
         return $result;
+    }
+
+    static private function patch_1(array $config): array{
+        $config["version"] = 2;
+        $config["presence"]["enabled"] = true;
+        return $config;
     }
 }

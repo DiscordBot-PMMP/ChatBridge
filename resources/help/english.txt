@@ -15,9 +15,10 @@ If something is not covered assume it has been documented in another event secti
 
 -------- Config.yml documentation --------
 
-version: 1                                              <- This is the version of the config.yml. DO NOT TOUCH, EVER.
+version: 2                                              <- This is the version of the config.yml. DO NOT TOUCH, EVER.
 
 presence:                                               <- Presence section allows you to update the bots 'status'/'presence'
+  enabled: true/false                                   <- Enables/disables the presence overwrite option.
   status: "Idle"                                        <- This is the bots' status, can be one of the following (Idle, Online, Offline, Dnd)
   type: "Playing"                                       <- This is the bots' activity type, can be one of the following (Playing, Streaming, Listening, Watching)
   message: "on a PMMP Server!"                          <- This is the message after the type, can be anything.

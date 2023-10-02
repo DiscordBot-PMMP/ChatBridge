@@ -1,7 +1,8 @@
 ---
-version: 1
+version: 2
 
 presence:
+  enabled: true
   status: "Idle"
   type: "Playing"
   message: "on a PMMP Server!"
