@@ -4,6 +4,9 @@
             "JaxkDev\\ChatBridge\\": "src/"
         }
     },
+    "require": {
+        "ext-yaml": "*"
+    },
     "require-dev": {
         "jaxkdev/discordbot": "^3",
         "phpstan/phpstan": "^1",

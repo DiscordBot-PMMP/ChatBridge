@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "65c27ee0336f3d093298544ddd8fb27f",
+    "content-hash": "efde69c93b45a660bdc1da463c55431c",
     "packages": [],
     "packages-dev": [
         {
@@ -413,12 +413,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "2ce93c47e87ae976775b4ea588ef710b47eefe22"
+                "reference": "38ef514a6c21335f29d9be64b097d2582ecbf8e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/2ce93c47e87ae976775b4ea588ef710b47eefe22",
-                "reference": "2ce93c47e87ae976775b4ea588ef710b47eefe22",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/38ef514a6c21335f29d9be64b097d2582ecbf8e4",
+                "reference": "38ef514a6c21335f29d9be64b097d2582ecbf8e4",
                 "shasum": ""
             },
             "require": {
@@ -522,20 +522,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-09-01T10:33:44+00:00"
+            "time": "2023-09-10T16:11:14+00:00"
         },
         {
             "name": "jaxkdev/discordbot",
-            "version": "3.0.0",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DiscordBot-PMMP/DiscordBot.git",
-                "reference": "c0ad5acfc25b977383a673fadce78c4d6d14220f"
+                "reference": "819a61d24251720935142958241c5db6919d9c88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DiscordBot-PMMP/DiscordBot/zipball/c0ad5acfc25b977383a673fadce78c4d6d14220f",
-                "reference": "c0ad5acfc25b977383a673fadce78c4d6d14220f",
+                "url": "https://api.github.com/repos/DiscordBot-PMMP/DiscordBot/zipball/819a61d24251720935142958241c5db6919d9c88",
+                "reference": "819a61d24251720935142958241c5db6919d9c88",
                 "shasum": ""
             },
             "require": {
@@ -572,9 +572,9 @@
             "description": "A PocketMine-MP Plugin that hosts your very own discord bot using DiscordPHP.",
             "support": {
                 "issues": "https://github.com/DiscordBot-PMMP/DiscordBot/issues",
-                "source": "https://github.com/DiscordBot-PMMP/DiscordBot/tree/3.0.0"
+                "source": "https://github.com/DiscordBot-PMMP/DiscordBot/tree/3.0.2"
             },
-            "time": "2023-09-01T11:25:07+00:00"
+            "time": "2023-09-04T19:00:28+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -684,12 +684,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "028ef2ab76485c9fd3b6d7214daf4efc02c89c53"
+                "reference": "98276233188583f2ff845a0f992a235472d9466a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/028ef2ab76485c9fd3b6d7214daf4efc02c89c53",
-                "reference": "028ef2ab76485c9fd3b6d7214daf4efc02c89c53",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/98276233188583f2ff845a0f992a235472d9466a",
+                "reference": "98276233188583f2ff845a0f992a235472d9466a",
                 "shasum": ""
             },
             "require": {
@@ -783,7 +783,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-08-09T19:41:55+00:00"
+            "time": "2023-09-25T11:31:05+00:00"
         },
         {
             "name": "phpstan/phpstan",
@@ -791,12 +791,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "f21592fc66e3a6a0d1accb026c2735d73395c9e1"
+                "reference": "c1d063c0929bf29a0cbaef2c6f8351c1a1836163"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f21592fc66e3a6a0d1accb026c2735d73395c9e1",
-                "reference": "f21592fc66e3a6a0d1accb026c2735d73395c9e1",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c1d063c0929bf29a0cbaef2c6f8351c1a1836163",
+                "reference": "c1d063c0929bf29a0cbaef2c6f8351c1a1836163",
                 "shasum": ""
             },
             "require": {
@@ -846,20 +846,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-09-01T12:24:03+00:00"
+            "time": "2023-10-02T15:45:53+00:00"
         },
         {
             "name": "pocketmine/bedrock-block-upgrade-schema",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockBlockUpgradeSchema.git",
-                "reference": "6d4ae416043337946a22fc31e8065ca2c21f472d"
+                "reference": "874e1c0c9b7b620744d08b59c78354fe9f028dfa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockBlockUpgradeSchema/zipball/6d4ae416043337946a22fc31e8065ca2c21f472d",
-                "reference": "6d4ae416043337946a22fc31e8065ca2c21f472d",
+                "url": "https://api.github.com/repos/pmmp/BedrockBlockUpgradeSchema/zipball/874e1c0c9b7b620744d08b59c78354fe9f028dfa",
+                "reference": "874e1c0c9b7b620744d08b59c78354fe9f028dfa",
                 "shasum": ""
             },
             "type": "library",
@@ -870,22 +870,22 @@
             "description": "Schemas describing how to upgrade saved block data in older Minecraft: Bedrock Edition world saves",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockBlockUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockBlockUpgradeSchema/tree/3.1.0"
+                "source": "https://github.com/pmmp/BedrockBlockUpgradeSchema/tree/3.2.0"
             },
-            "time": "2023-07-12T12:05:36+00:00"
+            "time": "2023-09-20T17:03:43+00:00"
         },
         {
             "name": "pocketmine/bedrock-data",
-            "version": "2.4.0+bedrock-1.20.10",
+            "version": "2.5.1+bedrock-1.20.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "f98bd1cae46d2920058acf3b23c0bedeac79f4ab"
+                "reference": "8f9d96047a731c37b18b28c2bfcdfa2705bb303f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/f98bd1cae46d2920058acf3b23c0bedeac79f4ab",
-                "reference": "f98bd1cae46d2920058acf3b23c0bedeac79f4ab",
+                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/8f9d96047a731c37b18b28c2bfcdfa2705bb303f",
+                "reference": "8f9d96047a731c37b18b28c2bfcdfa2705bb303f",
                 "shasum": ""
             },
             "type": "library",
@@ -896,22 +896,22 @@
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/bedrock-1.20.10"
+                "source": "https://github.com/pmmp/BedrockData/tree/2.5.1+bedrock-1.20.30"
             },
-            "time": "2023-07-12T11:51:54+00:00"
+            "time": "2023-09-27T11:40:15+00:00"
         },
         {
             "name": "pocketmine/bedrock-item-upgrade-schema",
-            "version": "1.4.0",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockItemUpgradeSchema.git",
-                "reference": "60d199afe5e371fd189b21d685ec1fed6ba54230"
+                "reference": "3edc9ebbad9a4f2d9c8f53b3a5ba44d4a792ad93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/60d199afe5e371fd189b21d685ec1fed6ba54230",
-                "reference": "60d199afe5e371fd189b21d685ec1fed6ba54230",
+                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/3edc9ebbad9a4f2d9c8f53b3a5ba44d4a792ad93",
+                "reference": "3edc9ebbad9a4f2d9c8f53b3a5ba44d4a792ad93",
                 "shasum": ""
             },
             "type": "library",
@@ -922,36 +922,36 @@
             "description": "JSON schemas for upgrading items found in older Minecraft: Bedrock world saves",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockItemUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.4.0"
+                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.5.0"
             },
-            "time": "2023-07-12T12:08:37+00:00"
+            "time": "2023-09-01T19:58:57+00:00"
         },
         {
             "name": "pocketmine/bedrock-protocol",
-            "version": "23.0.3+bedrock-1.20.10",
+            "version": "24.0.0+bedrock-1.20.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "e4157c7af3f91e1b08fe21be171eb73dad7029e9"
+                "reference": "38a516274aa6641b0da38011af35a5587fc87895"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/e4157c7af3f91e1b08fe21be171eb73dad7029e9",
-                "reference": "e4157c7af3f91e1b08fe21be171eb73dad7029e9",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/38a516274aa6641b0da38011af35a5587fc87895",
+                "reference": "38a516274aa6641b0da38011af35a5587fc87895",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "netresearch/jsonmapper": "^4.0",
-                "php": "^8.0",
+                "php": "^8.1",
                 "pocketmine/binaryutils": "^0.2.0",
                 "pocketmine/color": "^0.2.0 || ^0.3.0",
                 "pocketmine/math": "^0.3.0 || ^0.4.0 || ^1.0.0",
-                "pocketmine/nbt": "^0.3.0 || ^1.0.0",
+                "pocketmine/nbt": "^1.0.0",
                 "ramsey/uuid": "^4.1"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.10.7",
+                "phpstan/phpstan": "1.10.33",
                 "phpstan/phpstan-phpunit": "^1.0.0",
                 "phpstan/phpstan-strict-rules": "^1.0.0",
                 "phpunit/phpunit": "^9.5"
@@ -969,9 +969,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/23.0.3+bedrock-1.20.10"
+                "source": "https://github.com/pmmp/BedrockProtocol/tree/24.0.0+bedrock-1.20.30"
             },
-            "time": "2023-08-03T15:30:52+00:00"
+            "time": "2023-09-20T16:57:53+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -1345,16 +1345,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "5.5.0-BETA1",
+            "version": "5.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "c8100480ac494562fff12bbe905d73be109e1f12"
+                "reference": "338bb3fe6d70f093fc8dc01d1d3c3b4b3656fcf8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/c8100480ac494562fff12bbe905d73be109e1f12",
-                "reference": "c8100480ac494562fff12bbe905d73be109e1f12",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/338bb3fe6d70f093fc8dc01d1d3c3b4b3656fcf8",
+                "reference": "338bb3fe6d70f093fc8dc01d1d3c3b4b3656fcf8",
                 "shasum": ""
             },
             "require": {
@@ -1385,10 +1385,10 @@
                 "ext-zlib": ">=1.2.11",
                 "php": "^8.1",
                 "php-64bit": "*",
-                "pocketmine/bedrock-block-upgrade-schema": "~3.1.0+bedrock-1.20.10",
-                "pocketmine/bedrock-data": "~2.4.0+bedrock-1.20.10",
-                "pocketmine/bedrock-item-upgrade-schema": "~1.4.0+bedrock-1.20.10",
-                "pocketmine/bedrock-protocol": "~23.0.2+bedrock-1.20.10",
+                "pocketmine/bedrock-block-upgrade-schema": "~3.2.0+bedrock-1.20.30",
+                "pocketmine/bedrock-data": "~2.5.0+bedrock-1.20.30",
+                "pocketmine/bedrock-item-upgrade-schema": "~1.5.0+bedrock-1.20.30",
+                "pocketmine/bedrock-protocol": "~24.0.0+bedrock-1.20.30",
                 "pocketmine/binaryutils": "^0.2.1",
                 "pocketmine/callback-validator": "^1.0.2",
                 "pocketmine/color": "^0.3.0",
@@ -1427,7 +1427,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.5.0-BETA1"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.6.0"
             },
             "funding": [
                 {
@@ -1439,7 +1439,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2023-08-23T16:09:34+00:00"
+            "time": "2023-09-20T18:00:51+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -1619,12 +1619,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-factory.git",
-                "reference": "6d70f402f0eddb2b154b22950b5381bbf5b28469"
+                "reference": "7037f4b0950474e9d1350e8df89b15f1842085f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/6d70f402f0eddb2b154b22950b5381bbf5b28469",
-                "reference": "6d70f402f0eddb2b154b22950b5381bbf5b28469",
+                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/7037f4b0950474e9d1350e8df89b15f1842085f6",
+                "reference": "7037f4b0950474e9d1350e8df89b15f1842085f6",
                 "shasum": ""
             },
             "require": {
@@ -1665,9 +1665,9 @@
                 "response"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-factory/tree/master"
+                "source": "https://github.com/php-fig/http-factory"
             },
-            "time": "2023-05-17T18:32:11+00:00"
+            "time": "2023-09-22T11:16:44+00:00"
         },
         {
             "name": "psr/http-message",
@@ -2555,12 +2555,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/event-loop.git",
-                "reference": "6e7e587714fff7a83dcc7025aee42ab3b265ae05"
+                "reference": "f665998eb2df5601fb163a7bfd2f0d87e05c133b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/event-loop/zipball/6e7e587714fff7a83dcc7025aee42ab3b265ae05",
-                "reference": "6e7e587714fff7a83dcc7025aee42ab3b265ae05",
+                "url": "https://api.github.com/repos/reactphp/event-loop/zipball/f665998eb2df5601fb163a7bfd2f0d87e05c133b",
+                "reference": "f665998eb2df5601fb163a7bfd2f0d87e05c133b",
                 "shasum": ""
             },
             "require": {
@@ -2612,7 +2612,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/event-loop/issues",
-                "source": "https://github.com/reactphp/event-loop/tree/v1.4.0"
+                "source": "https://github.com/reactphp/event-loop/tree/1.x"
             },
             "funding": [
                 {
@@ -2620,7 +2620,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2023-05-05T10:11:24+00:00"
+            "time": "2023-09-04T19:39:50+00:00"
         },
         {
             "name": "react/http",
@@ -2874,12 +2874,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/stream.git",
-                "reference": "6fbc9672905c7d5a885f2da2fc696f65840f4a66"
+                "reference": "78a6ea55c385444443188f189ffa47ac37ef362a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/stream/zipball/6fbc9672905c7d5a885f2da2fc696f65840f4a66",
-                "reference": "6fbc9672905c7d5a885f2da2fc696f65840f4a66",
+                "url": "https://api.github.com/repos/reactphp/stream/zipball/78a6ea55c385444443188f189ffa47ac37ef362a",
+                "reference": "78a6ea55c385444443188f189ffa47ac37ef362a",
                 "shasum": ""
             },
             "require": {
@@ -2889,7 +2889,7 @@
             },
             "require-dev": {
                 "clue/stream-filter": "~1.2",
-                "phpunit/phpunit": "^9.5 || ^5.7 || ^4.8.35"
+                "phpunit/phpunit": "^9.6 || ^5.7 || ^4.8.36"
             },
             "default-branch": true,
             "type": "library",
@@ -2937,7 +2937,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/stream/issues",
-                "source": "https://github.com/reactphp/stream/tree/v1.3.0"
+                "source": "https://github.com/reactphp/stream/tree/1.x"
             },
             "funding": [
                 {
@@ -2945,7 +2945,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2023-06-16T10:52:11+00:00"
+            "time": "2023-09-25T15:21:39+00:00"
         },
         {
             "name": "ringcentral/psr7",
@@ -3464,12 +3464,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/translation.git",
-                "reference": "dcda32b84dbe07c10941abe1cbbb402f84ad9674"
+                "reference": "4e7ee96283b74666ab100f4eda33636dfe65246e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/translation/zipball/dcda32b84dbe07c10941abe1cbbb402f84ad9674",
-                "reference": "dcda32b84dbe07c10941abe1cbbb402f84ad9674",
+                "url": "https://api.github.com/repos/symfony/translation/zipball/4e7ee96283b74666ab100f4eda33636dfe65246e",
+                "reference": "4e7ee96283b74666ab100f4eda33636dfe65246e",
                 "shasum": ""
             },
             "require": {
@@ -3551,7 +3551,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-08-25T16:27:31+00:00"
+            "time": "2023-09-20T09:38:53+00:00"
         },
         {
             "name": "symfony/translation-contracts",
@@ -3638,12 +3638,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/discord-php/DiscordPHP.git",
-                "reference": "6234b07edd3cb4f6c57362e9661eb0f4ac4097ed"
+                "reference": "1e3647965c3d0e1d849370d46b657fcd04ac906b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/discord-php/DiscordPHP/zipball/6234b07edd3cb4f6c57362e9661eb0f4ac4097ed",
-                "reference": "6234b07edd3cb4f6c57362e9661eb0f4ac4097ed",
+                "url": "https://api.github.com/repos/discord-php/DiscordPHP/zipball/1e3647965c3d0e1d849370d46b657fcd04ac906b",
+                "reference": "1e3647965c3d0e1d849370d46b657fcd04ac906b",
                 "shasum": ""
             },
             "require": {
@@ -3708,7 +3708,7 @@
                 "source": "https://github.com/discord-php/DiscordPHP/tree/master",
                 "wiki": "https://github.com/discord-php/DiscordPHP/wiki"
             },
-            "time": "2023-08-27T09:41:42+00:00"
+            "time": "2023-10-01T12:25:08+00:00"
         },
         {
             "name": "trafficcophp/bytebuffer",
@@ -3764,7 +3764,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-yaml": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
 }

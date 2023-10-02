@@ -13,21 +13,26 @@
 namespace JaxkDev\ChatBridge;
 
 use AssertionError;
-use JaxkDev\DiscordBot\Models\Activity;
+use JaxkDev\DiscordBot\Models\Channels\Channel;
+use JaxkDev\DiscordBot\Models\Guild\Guild;
 use JaxkDev\DiscordBot\Models\Member;
+use JaxkDev\DiscordBot\Models\Messages\MessageType;
+use JaxkDev\DiscordBot\Models\Presence\Activity\Activity;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Author;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Embed;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Field;
 use JaxkDev\DiscordBot\Models\Messages\Embed\Footer;
-use JaxkDev\DiscordBot\Models\Messages\Message;
-use JaxkDev\DiscordBot\Models\Messages\Webhook;
+use JaxkDev\DiscordBot\Models\Presence\Activity\ActivityType;
+use JaxkDev\DiscordBot\Models\Presence\Status;
+use JaxkDev\DiscordBot\Models\User;
+use JaxkDev\DiscordBot\Plugin\Api;
 use JaxkDev\DiscordBot\Plugin\ApiRejection;
+use JaxkDev\DiscordBot\Plugin\ApiResolution;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordClosed;
 use JaxkDev\DiscordBot\Plugin\Events\DiscordReady;
 use JaxkDev\DiscordBot\Plugin\Events\MemberJoined;
 use JaxkDev\DiscordBot\Plugin\Events\MemberLeft;
 use JaxkDev\DiscordBot\Plugin\Events\MessageSent;
-use JaxkDev\DiscordBot\Plugin\Storage;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -35,46 +40,43 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\event\server\CommandEvent;
+use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
-use pocketmine\utils\Config;
 
 class EventListener implements Listener{
 
-    /** @var bool */
-    private $ready = false;
+    private bool $ready = false;
 
-    /** @var Main */
-    private $plugin;
+    private Main $plugin;
 
-    /** @var Config */
-    private $config;
+    private array $config;
+
+    private Api $api;
 
     public function __construct(Main $plugin){
         $this->plugin = $plugin;
-        $this->config = $this->plugin->getConfig();
+        $this->config = $this->plugin->getConfig()->getAll();
+        $this->api = $this->plugin->getDiscord()->getApi();
     }
 
     public function onDiscordReady(DiscordReady $event): void{
         $this->ready = true;
 
         //Update presence.
-        $type = match(strtolower(strval($this->config->getNested("presence.type", "Playing")))){
-            'listening', 'listen' => Activity::TYPE_LISTENING,
-            'watching', 'watch' => Activity::TYPE_WATCHING,
-            default => Activity::TYPE_PLAYING,
+        $type = match(strtolower($this->config["presence"]["type"]??"Playing")){
+            'listening', 'listen' => ActivityType::LISTENING,
+            'watching', 'watch' => ActivityType::WATCHING,
+            default => ActivityType::GAME,
         };
-        $status = match(strtolower(strval($this->config->getNested("presence.status", "Online")))){
-            'idle' => Member::STATUS_IDLE,
-            'dnd' => Member::STATUS_DND,
-            'offline' => Member::STATUS_OFFLINE,
-            default => Member::STATUS_ONLINE,
+        $status = match(strtolower($this->config["presence"]["status"]??"Online")){
+            'idle' => Status::IDLE,
+            'dnd' => Status::DND,
+            'offline' => Status::OFFLINE,
+            default => Status::ONLINE
         };
-        $activity = new Activity(strval($this->config->getNested("presence.message", "on a PMMP Server!")), $type);
-        $this->plugin->getDiscord()->getApi()->updateBotPresence($activity, $status)->then(function(){
-            $this->plugin->getLogger()->debug("Presence successfully updated.");
-        }, function(ApiRejection $rejection){
-            $this->plugin->getLogger()->error("Failed to update presence: ".$rejection->getMessage());
-        });
+        $activity = Activity::create($this->config["presence"]["message"]??"on a PMMP Server!", $type);
+        $event->setActivity($activity);
+        $event->setStatus($status);
     }
 
     public function onDiscordClosed(DiscordClosed $event): void{
@@ -106,7 +108,7 @@ class EventListener implements Listener{
         }
 
         /** @var array $config */
-        $config = $this->config->getNested("messages.minecraft");
+        $config = $this->config["messages"]["minecraft"];
         if(!$config['enabled']){
             return;
         }
@@ -138,23 +140,22 @@ class EventListener implements Listener{
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
         };
 
-        $embed = null;
+        $embeds = [];
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
                 $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+            $embeds[] = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])),
                 ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
-                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+                $embed_config["footer"] === null ? null : new Footer($formatter($embed_config["footer"])), null,
+                null, null, null, $embed_config["author"] === null ? null : new Author($formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
-            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+            $this->plugin->getDiscord()->getApi()->sendMessage(null, $cid, $formatter($config["format"]["text"]??""), null, $embeds)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft message event, '{$rejection->getMessage()}'");
             });
         }
@@ -168,7 +169,7 @@ class EventListener implements Listener{
         }
 
         /** @var array $config */
-        $config = $this->config->getNested("commands.minecraft");
+        $config = $this->config["commands"]["minecraft"];
         if(!$config['enabled']){
             return;
         }
@@ -207,23 +208,22 @@ class EventListener implements Listener{
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
         };
 
-        $embed = null;
+        $embeds = [];
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
                 $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+            $embeds[] = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])),
                 ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
-                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+                $embed_config["footer"] === null ? null : new Footer($formatter($embed_config["footer"])), null,
+                null, null, null, $embed_config["author"] === null ? null : new Author($formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
-            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+            $this->plugin->getDiscord()->getApi()->sendMessage(null, $cid, $formatter($config["format"]["text"]??""), null, $embeds)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft command event, '{$rejection->getMessage()}'");
             });
         }
@@ -237,7 +237,7 @@ class EventListener implements Listener{
         }
 
         /** @var array $config */
-        $config = $this->config->getNested("join.minecraft");
+        $config = $this->config["join"]["minecraft"];
         if(!$config['enabled']){
             return;
         }
@@ -256,23 +256,22 @@ class EventListener implements Listener{
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
         };
 
-        $embed = null;
+        $embeds = [];
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
                 $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+            $embeds[] = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])),
                 ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
-                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+                $embed_config["footer"] === null ? null : new Footer($formatter($embed_config["footer"])), null,
+                null, null, null, $embed_config["author"] === null ? null : new Author($formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
-            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+            $this->plugin->getDiscord()->getApi()->sendMessage(null, $cid, $formatter($config["format"]["text"]??""), null, $embeds)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft join event, '{$rejection->getMessage()}'");
             });
         }
@@ -286,13 +285,16 @@ class EventListener implements Listener{
         }
 
         /** @var array $config */
-        $config = $this->config->getNested("leave.minecraft");
+        $config = $this->config["leave"]["minecraft"];
         if(!$config['enabled']){
             return;
         }
 
         $player = $event->getPlayer();
         $reason = $event->getQuitReason();
+        if($reason instanceof Translatable){
+            $reason = $reason->getText();
+        }
         if($reason === "transfer" and $config["ignore_transferred"]){
             return;
         }
@@ -310,23 +312,22 @@ class EventListener implements Listener{
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
         };
 
-        $embed = null;
+        $embeds = [];
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
                 $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+            $embeds[] = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])),
                 ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
-                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+                $embed_config["footer"] === null ? null : new Footer($formatter($embed_config["footer"])), null,
+                null, null, null, $embed_config["author"] === null ? null : new Author($formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
-            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+            $this->plugin->getDiscord()->getApi()->sendMessage(null, $cid, $formatter($config["format"]["text"]??""), null, $embeds)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft leave event, '{$rejection->getMessage()}'");
             });
         }
@@ -340,7 +341,7 @@ class EventListener implements Listener{
         }
 
         /** @var array $config */
-        $config = $this->config->getNested("transferred.minecraft");
+        $config = $this->config["transferred"]["minecraft"];
         if(!$config['enabled']){
             return;
         }
@@ -363,23 +364,22 @@ class EventListener implements Listener{
             return str_replace(["{TIME-3}", "{time-3}"], "<t:".time().":f>", $text); //TODO Other formatted times supported by discord.
         };
 
-        $embed = null;
+        $embeds = [];
         $embed_config = $config["format"]["embed"];
         if($embed_config["enabled"]){
             $fields = [];
             foreach($embed_config["fields"] as $field){
                 $fields[] = new Field($formatter($field["name"]), $formatter($field["value"]), $field["inline"]);
             }
-            $embed = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])), Embed::TYPE_RICH,
+            $embeds[] = new Embed(($embed_config["title"] === null ? null : $formatter($embed_config["title"])),
                 ($embed_config["description"] === null ? null : $formatter($embed_config["description"])),
                 $embed_config["url"], $embed_config["time"] ? time() : null, $embed_config["colour"],
-                new Footer($embed_config["footer"] === null ? null : $formatter($embed_config["footer"])), null,
-                null, null, new Author($embed_config["author"] === null ? null : $formatter($embed_config["author"])), $fields);
+                $embed_config["footer"] === null ? null : new Footer($formatter($embed_config["footer"])), null,
+                null, null, null, $embed_config["author"] === null ? null : new Author($formatter($embed_config["author"])), $fields);
         }
 
         foreach($config["to_discord_channels"] as $cid){
-            $message = new Message($cid, null, $formatter($config["format"]["text"]??""), $embed);
-            $this->plugin->getDiscord()->getApi()->sendMessage($message)->otherwise(function(ApiRejection $rejection){
+            $this->plugin->getDiscord()->getApi()->sendMessage(null, $cid, $formatter($config["format"]["text"]??""), null, $embeds)->otherwise(function(ApiRejection $rejection){
                 $this->plugin->getLogger()->warning("Failed to send discord message on minecraft transfer event, '{$rejection->getMessage()}'");
             });
         }
@@ -392,50 +392,44 @@ class EventListener implements Listener{
      */
     public function onDiscordMemberJoin(MemberJoined $event): void{
         /** @var array $config */
-        $config = $this->config->getNested("join.discord");
+        $config = $this->config["join"]["discord"];
         if(!$config['enabled']){
             return;
         }
 
-        $member = $event->getMember();
-        $server_id = $member->getServerId();
-        if(!in_array($server_id, $config["servers"])){
-            $this->plugin->getLogger()->debug("Ignoring member join event, discord server
-            '$server_id' is not in config list.");
+        if(!in_array($event->getMember()->getGuildId(), $config["servers"])){
+            $this->plugin->getLogger()->debug("Ignoring discord member join event, discord guild '".$event->getMember()->getGuildId()."' is not in config list.");
             return;
         }
 
-        $server = Storage::getServer($server_id);
-        if($server === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord member join event, server
-            '$server_id' does not exist in local storage.");
-            return;
-        }
-        $user = Storage::getUser($member->getUserId());
-        if($user === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord member join event, user
-            '{$member->getUserId()}' does not exist in local storage.");
-            return;
-        }
+        $this->api->fetchGuild($event->getMember()->getGuildId())->then(function(ApiResolution $res) use($event, $config){
+            /** @var Guild $server */
+            $server = $res->getData()[0];
+            $this->api->fetchUser($event->getMember()->getUserId())->then(function(ApiResolution $res) use($server, $event, $config){
+                /** @var User $user */
+                $user = $res->getData()[0];
+                $member = $event->getMember();
 
-        //Format message.
-        $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
-        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
-        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
-        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', $member->getJoinTimestamp()), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', $member->getJoinTimestamp()), $message);
-        if(!is_string($message)){
-            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
-        }
+                //Format message.
+                $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
+                $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
+                $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+                $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
 
-        //Broadcast.
-        $worlds = $config['to_minecraft_worlds'];
-        $players = $this->getPlayersInWorlds($worlds);
+                $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', time()), $message);
+                $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', time()), $message);
+                if(!is_string($message)){
+                    throw new AssertionError("A string is always expected, got '".gettype($message)."'");
+                }
 
-        $this->plugin->getServer()->broadcastMessage($message, $players);
+                //Broadcast.
+                $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+            }, function(ApiRejection $rej) use($event){
+                $this->plugin->getLogger()->warning("Failed to process discord member join event, failed to fetch user '".$event->getMember()->getUserId()."' - ".$rej->getMessage());
+            });
+        }, function(ApiRejection $rej) use($event){
+            $this->plugin->getLogger()->warning("Failed to process discord member join event, failed to fetch guild '".$event->getMember()->getGuildId()."' - ".$rej->getMessage());
+        });
     }
 
     /**
@@ -444,44 +438,67 @@ class EventListener implements Listener{
      */
     public function onDiscordMemberLeave(MemberLeft $event): void{
         /** @var array $config */
-        $config = $this->config->getNested("leave.discord");
+        $config = $this->config["leave"]["discord"];
         if(!$config['enabled']){
             return;
         }
 
-        $member = $event->getMember();
-        $server_id = $member->getServerId();
-        if(!in_array($server_id, $config["servers"])){
-            $this->plugin->getLogger()->debug("Ignoring member leave event, discord server '$server_id' is not in config list.");
+        if(!in_array($event->getGuildId(), $config["servers"])){
+            $this->plugin->getLogger()->debug("Ignoring discord member leave event, discord guild '".$event->getGuildId()."' is not in config list.");
             return;
         }
 
-        $server = Storage::getServer($server_id);
-        if($server === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord leave join event, server '$server_id' does not exist in local storage.");
-            return;
-        }
-        $user = Storage::getUser($member->getUserId());
-        if($user === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord member leave event, user '{$member->getUserId()}' does not exist in local storage.");
-            return;
-        }
+        $this->api->fetchGuild($event->getGuildId())->then(function(ApiResolution $res) use($config, $event){
+            /** @var Guild $server */
+            $server = $res->getData()[0];
+            $this->api->fetchUser($event->getUserId())->then(function(ApiResolution $res) use($server, $event, $config){
+                /** @var User $user */
+                $user = $res->getData()[0];
+                $member = $event->getCachedMember();
+                if($member === null){
+                    $this->api->fetchMember($event->getGuildId(), $event->getUserId())->then(function(ApiResolution $res) use ($server, $user, $config){
+                        /** @var Member $member */
+                        $member = $res->getData()[0];
 
-        //Format message.
-        $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
-        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
-        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
-        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', time()), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', time()), $message);
-        if(!is_string($message)){
-            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
-        }
+                        //Format message.
+                        $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
+                        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
+                        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+                        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
 
-        //Broadcast.
-        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+                        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', time()), $message);
+                        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', time()), $message);
+                        if(!is_string($message)){
+                            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
+                        }
+
+                        //Broadcast.
+                        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+                    }, function(ApiRejection $rej) use ($event){
+                        $this->plugin->getLogger()->warning("Failed to process discord member leave event, failed to fetch member '".$event->getUserId()."' - ".$rej->getMessage());
+                    });
+                }else{
+                    //Format message.
+                    $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
+                    $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
+                    $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+                    $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
+
+                    $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', time()), $message);
+                    $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', time()), $message);
+                    if(!is_string($message)){
+                        throw new AssertionError("A string is always expected, got '".gettype($message)."'");
+                    }
+
+                    //Broadcast.
+                    $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+                }
+            }, function(ApiRejection $rej) use($event){
+                $this->plugin->getLogger()->warning("Failed to process discord member leave event, failed to fetch user '".$event->getUserId()."' - ".$rej->getMessage());
+            });
+        }, function(ApiRejection $rej) use($event){
+            $this->plugin->getLogger()->warning("Failed to process discord member leave event, failed to fetch guild '".$event->getGuildId()."' - ".$rej->getMessage());
+        });
     }
 
     /**
@@ -489,68 +506,75 @@ class EventListener implements Listener{
      */
     public function onDiscordMessage(MessageSent $event): void{
         /** @var array $config */
-        $config = $this->config->getNested("messages.discord");
+        $config = $this->config["messages"]["discord"];
         if(!$config['enabled']){
             return;
         }
-        if(($msg = $event->getMessage()) instanceof Webhook){
-            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via webhook.");
+        if(!in_array(($msg = $event->getMessage())->getType(), [MessageType::DEFAULT, MessageType::CHAT_INPUT_COMMAND, MessageType::REPLY])){
+            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', not a valid type.");
             return;
         }
 
-        $channel = Storage::getChannel($msg->getChannelId());
-        if($channel === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, channel '{$msg->getChannelId()}' does not exist in local storage.");
-            return;
-        }
-        if(!in_array($channel->getId()??"Will never be null", $config['from_channels'])){
-            $this->plugin->getLogger()->debug("Ignoring message from channel '{$channel->getId()}', ID is not in list.");
+        if(!in_array($msg->getChannelId(), $config['from_channels'])){
+            $this->plugin->getLogger()->debug("Ignoring message from channel '{$msg->getChannelId()}', ID is not in list.");
             return;
         }
 
-        $server_id = $msg->getServerId();
-        if($server_id === null){
-            //DM Channel.
-            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', Sent via DM to bot.");
+        if($msg->getAuthorId() === null){
+            $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', no author ID.");
             return;
         }
-        $server = Storage::getServer($server_id);
-        if($server === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, server '{$msg->getServerId()}' does not exist in local storage.");
-            return;
-        }
-        $member = Storage::getMember($msg->getAuthorId()??""); //Member is not required, but preferred.
-        $user_id = (($member?->getUserId()) ?? (explode(".", $msg->getAuthorId()?? "na.na")[1]));
-        $user = Storage::getUser($user_id);
-        if($user === null){
-            //shouldn't happen, but can.
-            $this->plugin->getLogger()->warning("Failed to process discord message event, author user '$user_id' does not exist in local storage.");
-            return;
-        }
-        $content = trim($msg->getContent());
-        if(strlen($content) === 0){
+
+        if(strlen(trim($msg->getContent()??"")) === 0){
             //Files or other type of messages.
             $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', No text content.");
             return;
         }
 
-        //Format message.
-        $message = str_replace(['{NICKNAME}', '{nickname}'], ($member?->getNickname())??$user->getUsername(), $config['format']);
-        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
-        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
-        $message = str_replace(['{MESSAGE}', '{message'], $content, $message);
-        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
-        $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName(), $message);
-        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', (int)($msg->getTimestamp()??time())), $message);
-        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', (int)($msg->getTimestamp()??time())), $message);
-        if(!is_string($message)){
-            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
-        }
+        $this->api->fetchChannel(null, $msg->getChannelId())->then(function(ApiResolution $res) use($msg, $config){
+            /** @var Channel $channel */
+            $channel = $res->getData()[0];
+            if($channel->getGuildId() === null){
+                $this->plugin->getLogger()->debug("Ignoring message '{$msg->getId()}', channel is not in a guild.");
+                return;
+            }
+            $this->api->fetchGuild($channel->getGuildId())->then(function(ApiResolution $res) use ($channel, $msg, $config){
+                /** @var Guild $server */
+                $server = $res->getData()[0];
+                $this->api->fetchUser($msg->getAuthorId())->then(function(ApiResolution $res) use ($server, $channel, $msg, $config){
+                    /** @var User $user */
+                    $user = $res->getData()[0];
+                    $this->api->fetchMember($channel->getGuildId(), $user->getId())->then(function(ApiResolution $res) use ($server, $user, $channel, $msg, $config){
+                        /** @var Member $member */
+                        $member = $res->getData()[0];
 
-        //Broadcast.
-        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+                        //Format message.
+                        $message = str_replace(['{NICKNAME}', '{nickname}'], $member->getNickname()??$user->getUsername(), $config['format']);
+                        $message = str_replace(['{USERNAME}', '{username}'], $user->getUsername(), $message);
+                        $message = str_replace(['{USER_DISCRIMINATOR}', '{user_discriminator}', '{DISCRIMINATOR}', '{discriminator}'], $user->getDiscriminator(), $message);
+                        $message = str_replace(['{MESSAGE}', '{message'], trim($msg->getContent()??""), $message);
+                        $message = str_replace(['{SERVER}', '{server}'], $server->getName(), $message);
+                        $message = str_replace(['{CHANNEL}', '{channel}'], $channel->getName()??"Unknown", $message);
+                        $message = str_replace(['{TIME}', '{time}', '{TIME-1}', '{time-1}'], date('G:i:s', $msg->getTimestamp()), $message);
+                        $message = str_replace(['{TIME-2}', '{time-2}'], date('G:i', $msg->getTimestamp()), $message);
+                        if(!is_string($message)){
+                            throw new AssertionError("A string is always expected, got '".gettype($message)."'");
+                        }
+
+                        //Broadcast.
+                        $this->plugin->getServer()->broadcastMessage($message, $this->getPlayersInWorlds($config['to_minecraft_worlds']));
+                    }, function(ApiRejection $rej) use ($msg){
+                        $this->plugin->getLogger()->warning("Failed to process discord message event, failed to fetch member '".$msg->getAuthorId()."' - ".$rej->getMessage());
+                    });
+                }, function(ApiRejection $rej) use ($msg){
+                    $this->plugin->getLogger()->warning("Failed to process discord message event, failed to fetch user '".$msg->getAuthorId()."' - ".$rej->getMessage());
+                });
+            }, function(ApiRejection $rej) use ($channel){
+                $this->plugin->getLogger()->warning("Failed to process discord message event, failed to fetch guild '".$channel->getGuildId()."' - ".$rej->getMessage());
+            });
+        }, function(ApiRejection $rej) use ($msg){
+            $this->plugin->getLogger()->warning("Failed to process discord message event, failed to fetch channel '".$msg->getChannelId()."' - ".$rej->getMessage());
+        });
     }
 
     /**
