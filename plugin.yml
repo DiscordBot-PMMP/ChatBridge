@@ -1,5 +1,5 @@
 name: ChatBridge
-version: 1.1.1
+version: 1.1.2
 author: JaxkDev
 main: JaxkDev\ChatBridge\Main
 src-namespace-prefix: JaxkDev\ChatBridge
