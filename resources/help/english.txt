@@ -4,7 +4,7 @@ PRs are the most optimal way to do this. (https://github.com/DiscordBot-PMMP/Cha
 ========================================================================================================================
 
 English Help Document
-Revision | 02-08-2022
+Revision | 15-10-2023
 Contributors | JaxkDev
 
 

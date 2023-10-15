@@ -1,6 +1,6 @@
 Document d'aide en Français
 Revision | 08-10-2023
-Contributors | Original : JaxkDev, Traduction :Rover17
+Traduction | Rover17
 
 Vous trouverez ci-dessous un court document d'aide expliquant ce que vous pouvez modifier dans le fichier config.yml et ce qu'il fera.
 
