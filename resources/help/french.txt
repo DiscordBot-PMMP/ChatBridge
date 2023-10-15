@@ -1,0 +1,184 @@
+Document d'aide en Français
+Revision | 08-10-2023
+Contributors | Original : JaxkDev, Traduction :Rover17
+
+Vous trouverez ci-dessous un court document d'aide expliquant ce que vous pouvez modifier dans le fichier config.yml et ce qu'il fera.
+
+Les sections de messages qui montrent la majorité des informations, comme les sections ci-dessous, sont presque exactement les mêmes.
+Si quelque chose n'est pas cité ci-dessous, il est potentiellement documenté dans une autre section d'événement ci-dessus (probablement dans celle des messages).
+
+-------- Config.yml documentation --------
+
+version: 2                                              <- Il s'agit de la version du fichier config.yml NE JAMAIS LE MODIFIER
+
+presence:                                               <- La section de présence vous permet de modifier LE 'statut'/'présence' de votre bot.
+  enabled: true/false                                   <- Active/désactive l'option de changement de la présence du bot.
+  status: "Idle"                                        <- Définit le statut de votre bot qui peut être l'un des suivants (Idle, Online, Offline, Dnd)
+  type: "Playing"                                       <- Définit le type d'activité de votre bot qui peut être l'une des suivantes (Playing, Streaming, Listening, Watching)
+  message: "on a PMMP Server!"                          <- Définit le message après le type d'activité, peut-être n'importe quoi
+
+
+
+messages:                                               <- La section de messages vous permet de modfier les messages.
+  discord:                                              <- Cette configuration vous permet de modfier les messages envoyé DEPUIS discord VERS minecraft.
+    enabled: true                                       <- Active/désactive les messages.
+    from_channels:                                      <- Il s'agit des channels desquels le bot verra les messages, ID DES CHANNELS UNIQUEMENT  .
+      - "12345678912345678"
+      - "14284181241849897"                             <- Pour ajouter plus de channels, ajouter plusieurs lignes comme celle ci.
+    format: "[Discord] §a{NICKNAME}§r > §c{MESSAGE}"    <- Il s'agit du format duquel les messages seront envoyées de discord a minecraft
+                                                           (variables optionnelles : {NICKNAME}, {USERNAME}, {USER_DISCRIMINATOR}, {MESSAGE}, {SERVER}, {CHANNEL}, {TIME}, {TIME-2})
+    to_minecraft_worlds: "*"                            <- Les mondes auxquels le message sera envoyé, "*" pour tous les mondes ou une liste de noms de mondes
+
+    to_minecraft_worlds:                                <- Exemple de beaucoup de mondes plutôt que "*" (tous les mondes)
+      - "world1"                                        <- Nom des mondes
+      - "world2"
+      - "world3"
+
+
+  minecraft:                                            <- Cette configuration vous permet de modifier les messages envoyés DEPUIS Minecraft VERS Discord.
+    enabled: true                                       <- Active/désactive les messages.
+    from_worlds: "*"                                    <- Les mondes auxquels le message sera envoyé, "*" pour tous les mondes, ou une liste de noms de mondes. (Voir l'exemple en haut)
+    format:                                             <- Il s'agit du format que les messages seront envoyés de Minecraft à discord, Les options string/text peuvent inclure les variables suivantes :
+                                                           {USERNAME}, {DISPLAY_NAME}, {MESSAGE}, {XUID}, {UUID},
+                                                           {ADDRESS}, {PORT}, {WORLD}, {TIME}, {TIME-2}, {TIME-3}
+      text: "New Message"                               <- C'est le message qui sera envoyé au Discord (Si l'embed est activé) (peut être juste "" si vous ne voulez rien envoyer, mais l'embed doit être activée)
+
+      embed:                                            <- Voir https://tinyurl.com/ChatBridgeEmbed pour une aide visuelle
+        enabled: true                                   <- Ajoute un embed au message
+        title: null                                     <- null ou string
+        description: "{USERNAME} ```{MESSAGE}```"       <- null ou string
+        url: null                                       <- null ou string URL (rend le titre cliquable, inutile si le titre est null.)
+        author: null                                    <- null ou string
+        footer: "ChatBridge"                            <- null ou string
+        colour: 0xEE5959                                <- hex colour code (mettre zero-x (0x) avant le code hex) (0x000000 = blanc, 0xFFFFFF = blanc, etc, https://colors-picker.com/hex-color-picker/)
+        time: true                                      <- Afficher l'heure du message dans le footer de l'embed
+        fields: []                                      <- array de champs intégrés, peut-être un array vide ([])
+
+        fields:                                         <- Exemple de plusieurs champs, ajoutez jusqu'à 25 champs.
+          - name: "Field Name"                          <- null ou string — au moins un string est requis, les deux ne peuvent pas être null
+            description: "Field Description"            <- null ou string - ^
+            inline: true                                <- true ou false, si true, le champ sera affiché en ligne
+          - name: "Field Name"
+            description: "Field Description"
+            inline: false
+
+    to_discord_channels:                                <- Channel discord ou le message sera envoyé
+      - "12345678912345678"                             <- Id de channels discord
+      - "42356325325312412"
+
+
+commands:                                               <- Voici la configuration des commandes exécutées dans Minecraft.
+  minecraft:
+    enabled: true
+    from_worlds: "*"
+    format:                                             <- Variables disponibles :
+                                                           {COMMAND}, {ARGS}, {USERNAME}, {DISPLAY_NAME}, {MESSAGE}, {XUID},
+                                                           {UUID}, {ADDRESS}, {PORT}, {WORLD}, {TIME}, {TIME-2}, {TIME-3}
+      text: "Command executed"
+      embed:
+        enabled: true
+        title: "{USERNAME}"
+        description: "/{COMMAND} {ARGS}"
+        author: "ChatBridge"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0x49F9C1
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "12345678912345678"
+
+
+leave:                                                  <- Cette configuration est pour les messages envoyés lorsqu'un joueur quitte un serveur.
+  discord:                                              <- Cette configuration est pour les messages envoyés VERS MINECRAFT, lorsqu'un membre quitte le serveur DISCORD.
+    enabled: true
+    servers:
+      - "12345678912345678"
+    format: "§a{NICKNAME} §cHas left :("                <- Variables disponibles :
+                                                           {NICKNAME}, {USERNAME}, {USER_DISCRIMINATOR}, {SERVER}, {TIME}, {TIME-2}
+    to_minecraft_worlds: "*"
+
+  minecraft:                                            <- Cette configuration est pour les messages envoyés VERS DISCORD, lorsqu'un membre quitte le serveur MINECRAFT.
+    enabled: true
+    ignore_transferred: true                            <- true ou false, si true il n'enverra pas de messages de deconection lorsque le joueur est transféré.
+    format:                                             <- Variables disponibles pour les options de texte/string:
+                                                           {REASON}, {USERNAME}, {DISPLAY_NAME}, {XUID}, {UUID},
+                                                           {ADDRESS}, {PORT}, {TIME}, {TIME-2}, {TIME-3}
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Left"
+        description: "- **{USERNAME}** left, reason: {REASON}"
+        author: "ChatBridge"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "12345678912345678"
+
+
+join:
+  discord:
+    enabled: true
+    servers:
+      - "12345678912345678"
+    format: "§a{USERNAME} §cHas joined the discord server :)"   <- Variables disponibles :
+                                                                   {NICKNAME}, {USERNAME}, {USER_DISCRIMINATOR}, {SERVER}, {TIME}, {TIME-2}
+    to_minecraft_worlds: "*"
+
+  minecraft:
+    enabled: true
+    format:                                                     <- Variables disponibles pour les options de texte/string:
+                                                                   {USERNAME}, {DISPLAY_NAME}, {XUID}, {UUID},
+                                                                   {ADDRESS}, {PORT}, {TIME}, {TIME-2}, {TIME-3}
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Joined"
+        description: "+ **{USERNAME}**"
+        author: "ChatBridge"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "12345678912345678"
+
+
+transferred:
+  minecraft:
+    enabled: true
+    format:                                                     <- Variables disponibles pour les options de texte/string:
+                                                                   {USERNAME}, {DISPLAY_NAME}, {XUID}, {UUID},
+                                                                   {ADDRESS}, {PORT}, {TIME}, {TIME-2}, {TIME-3},
+                                                                   {SERVER_ADDRESS}, {SERVER_PORT}
+      text: ""
+      embed:
+        enabled: true
+        title: "Player Transferred"
+        description: "**{USERNAME}** -> `{SERVER_ADDRESS}:{SERVER_PORT}`"
+        author: "ChatBridge"
+        url: null
+        footer: "This is a footer"
+        time: true
+        colour: 0xEE5959
+        fields:
+          - name: "Field Name"
+            value: "Field Value"
+            inline: false
+    to_discord_channels:
+      - "12345678912345678"
+
+...
