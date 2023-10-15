@@ -46,6 +46,7 @@ class Main extends PluginBase{
         foreach($dir as $file){
             $this->saveResource("help/" . $file, true);
         }
+        $this->saveResource("config.yml");
     }
 
     private function checkPrerequisites(): void{
